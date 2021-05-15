@@ -25,7 +25,7 @@ public class VideoInfo {
 
     private JSONObject playerResponse;
     private static String TAG = "VideoInfo";
-    private String decipherUrl = "https://raw.githubusercontent.com/BorisChen396/PuddingPlayer/master/decipher/decipher";
+    private String decipherUrl = "https://raw.githubusercontent.com/BorisChen396/PuddingPlayer/master/DECIPHER";
     private Uri decipher;
 
     public int AUDIO_QUALITY_LOW = 0;

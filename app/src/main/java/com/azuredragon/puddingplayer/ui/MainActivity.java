@@ -213,7 +213,8 @@ public class MainActivity extends AppCompatActivity {
             Log.e("UpdateCheck", e.getMessage());
             return;
         }
-        long version = Long.parseLong(response.getString("response").replace("\n", ""));
+        Uri info = Uri.parse(response.getString("response"));
+        long version = Long.parseLong(info.getQueryParameter("version"));
         if(currentVersion < version) {
             runOnUiThread(() -> {
                 AlertDialog updateDialog = new AlertDialog.Builder(this)
@@ -222,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
                         .setPositiveButton("Update", (dialog, which) -> {
                             Intent intent = new Intent();
                             intent.setAction(Intent.ACTION_VIEW);
-                            intent.setData(Uri.parse(updateUrl));
+                            intent.setData(Uri.parse(info.getQueryParameter("url")));
                             startActivity(intent);
                         })
                         .setNegativeButton("Cancel", (dialog, which) -> {

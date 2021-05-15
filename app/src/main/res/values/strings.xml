@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Pudding</string>
+    <string name="notifiyChannel">Playback</string>
+    <string name="notifyDes">This channel is used to show the player notification.</string>
+    <string name="toast_oembed_error">"Unable to get the video info."</string>
+    <string name="error_http_error">HTTP request returns error with %d.</string>
+    <string name="error_no_internet">Internet disconnected</string>
+    <string name="toast_playlist_error">"Unable to get the playlist info. "</string>
+    <string name="error_http_error_404">The requested URL could not be found</string>
+    <string name="string_about">Pudding is an application that can let you listen music from YouTube!</string>
+    <string name="string_add_item_hint">YouTube link</string>
+    <string name="dialog_add_all_items">There is a list id (%s) in the link.  Would you like to add the whole playlist or just the specific video?</string>
+</resources>

@@ -231,6 +231,5 @@ public class MainActivity extends AppCompatActivity {
                 updateDialog.show();
             });
         }
-        Log.i("UpdateCheck", "TEST");
     }
 }

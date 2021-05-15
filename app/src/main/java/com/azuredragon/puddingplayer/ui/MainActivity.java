@@ -205,7 +205,6 @@ public class MainActivity extends AppCompatActivity {
 
     void checkUpdate() {
         String url = "https://raw.githubusercontent.com/BorisChen396/PuddingPlayer/master/VERSION";
-        String updateUrl = "https://github.com/BorisChen396/PuddingPlayer/releases";
         Bundle response;
         try {
             response = new NetworkHandler(url, this).getResponse();

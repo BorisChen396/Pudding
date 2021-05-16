@@ -15,7 +15,7 @@
         android:layout_height="5dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:maxHeight="5dp"
+        android:maxHeight="3dp"
         android:max="0"
         android:progress="50"
         android:progressTint="@color/purple_200" />
@@ -28,12 +28,12 @@
         android:gravity="center_vertical"
         android:maxLines="1"
         android:textColor="@color/white"
-        android:textSize="18sp"
         android:ellipsize="end"
         android:paddingStart="?dialogPreferredPadding"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginEnd="10dp"/>
+        android:layout_marginEnd="10dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
 
     <TextView
         android:id="@+id/player_small_current"
@@ -42,8 +42,8 @@
         app:layout_constraintEnd_toStartOf="@+id/player_small_playPause"
         android:gravity="center"
         android:text="00:00"
-        android:textSize="18sp"
-        android:textColor="@color/white"/>
+        android:textColor="@color/white"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
 
     <ImageButton
         android:id="@+id/player_small_playPause"

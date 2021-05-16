@@ -2,6 +2,7 @@ package com.azuredragon.puddingplayer.ui;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,6 +25,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -44,7 +46,8 @@ public class MainActivity extends AppCompatActivity {
     MediaBrowserCompat browser;
     MediaControllerCompat controllerCompat;
     PlayerFragment playerFragment;
-    long currentVersion = 20210515;
+    RecyclerView playlist;
+    String currentVersion = "20210516";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +82,20 @@ public class MainActivity extends AppCompatActivity {
             controllerCompat.registerCallback(controllerCallback);
             refreshPlaylist(controllerCompat.getQueue());
             playerFragment = new PlayerFragment(MainActivity.this, controllerCompat);
+            playerFragment.behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+                @Override
+                public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                    if(newState == BottomSheetBehavior.STATE_COLLAPSED)
+                        playlist.setPadding(0, 0, 0, Utils.dp2px(MainActivity.this, 70));
+                    else
+                        playlist.setPadding(0, 0, 0, 0);
+                }
+
+                @Override
+                public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+
+                }
+            });
         }
     };
 
@@ -156,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void refreshPlaylist(List<MediaSessionCompat.QueueItem> queue) {
-        RecyclerView playlist = findViewById(R.id.playlist);
+        playlist = findViewById(R.id.playlist);
         playlist.setLayoutManager(new LinearLayoutManager(this));
         playlist.setAdapter(new PlaylistItemAdapter(queue, controllerCompat, MainActivity.this));
         Log.i("", queue.size() + "");
@@ -212,9 +229,9 @@ public class MainActivity extends AppCompatActivity {
             Log.e("UpdateCheck", e.getMessage());
             return;
         }
-        Uri info = Uri.parse(response.getString("response"));
-        long version = Long.parseLong(info.getQueryParameter("version"));
-        if(currentVersion < version) {
+        Uri info = Uri.parse("https://example.com/?" + response.getString("response"));
+        String version = info.getQueryParameter("version");
+        if(!currentVersion.equals(version)) {
             runOnUiThread(() -> {
                 AlertDialog updateDialog = new AlertDialog.Builder(this)
                         .setTitle("New version available")

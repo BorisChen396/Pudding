@@ -237,6 +237,12 @@ public class MainActivity extends AppCompatActivity {
                         .setPositiveButton("Update", (dialog, which) -> {
                             Intent intent = new Intent();
                             intent.setAction(Intent.ACTION_VIEW);
+                            intent.setData(Uri.parse(info.getQueryParameter("apk-url")));
+                            startActivity(intent);
+                        })
+                        .setNeutralButton("More Info", (dialog, which) -> {
+                            Intent intent = new Intent();
+                            intent.setAction(Intent.ACTION_VIEW);
                             intent.setData(Uri.parse(info.getQueryParameter("url")));
                             startActivity(intent);
                         })

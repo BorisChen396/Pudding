@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notifiyChannel">播放</string>
+    <string name="notifyDes">這個通知頻道用以顯示播放通知</string>
+    <string name="toast_oembed_error">無法取得影片資訊</string>
+    <string name="error_http_error">HTTP請求發生錯誤%d</string>
+    <string name="error_no_internet">沒有網路連線</string>
+    <string name="toast_playlist_error">無法取得清單資訊</string>
+    <string name="error_http_error_404">連結不存在</string>
+    <string name="string_about">布丁超好吃！</string>
+    <string name="string_add_item_hint">YouTube連結</string>
+    <string name="dialog_add_all_items">這個連結包含一個播放清單(%s)。想要新增整個清單還是這個影片就好？</string>
+    <string name="dialog_button_add_all">新增全部</string>
+    <string name="dialog_button_only_one">影片就好</string>
+    <string name="dialog_about_title">關於</string>
+    <string name="dialog_add_item_title">新增項目</string>
+    <string name="dialog_button_cancel">取消</string>
+    <string name="dialog_button_close">關閉</string>
+    <string name="dialog_button_ok">確定</string>
+    <string name="dialog_title_update">有可用的更新版本</string>
+    <string name="dialog_content_update">新版本已推出。(%s)</string>
+    <string name="dialog_button_update">更新</string>
+    <string name="dialog_button_more_info">更多資訊</string>
+    <string name="edittext_error_required">不可留白</string>
+    <string name="dialog_content_wait">請稍後</string>
+    <string name="activity_title_settings">設定</string>
+    <string name="preference_checkUpdate_title">自動檢查更新</string>
+    <string name="preference_checkUpdate_summary">在啟動時自動檢查更新</string>
+    <string name="preference_handleAudioFocus_title">處理音訊焦點</string>
+    <string name="preference_handleAudioFocus_summary">當其他程式播放音訊時暫停播放器</string>
+    <string name="preference_handleAudioBecomingNoisy_title">在耳機移除時暫停</string>
+    <string name="preference_handleAudioBecomingNoisy_summary">當耳機拔出時暫停播放器</string>
+    <string name="preference_lowQuality_title">使用低音質來源</string>
+    <string name="preference_lowQuality_summary">盡可能使用低音質來源以節省流量</string>
+    <string name="preference_general">一般</string>
+    <string name="preference_playback">播放</string>
+</resources>

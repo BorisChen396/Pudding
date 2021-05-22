@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Pudding</string>
+    <string name="app_name" translatable="false">Pudding</string>
     <string name="notifiyChannel">Playback</string>
     <string name="notifyDes">This channel is used to show the player notification.</string>
     <string name="toast_oembed_error">"Unable to get the video info."</string>
@@ -7,7 +7,31 @@
     <string name="error_no_internet">Internet disconnected</string>
     <string name="toast_playlist_error">"Unable to get the playlist info. "</string>
     <string name="error_http_error_404">The requested URL could not be found</string>
-    <string name="string_about">Pudding is an application that can let you listen music from YouTube!</string>
+    <string name="string_about">Pudding is delicious!</string>
     <string name="string_add_item_hint">YouTube link</string>
     <string name="dialog_add_all_items">There is a list id (%s) in the link.  Would you like to add the whole playlist or just the specific video?</string>
+    <string name="dialog_button_add_all">Add all</string>
+    <string name="dialog_button_only_one">Only the video</string>
+    <string name="dialog_about_title">About</string>
+    <string name="dialog_add_item_title">Add Item</string>
+    <string name="dialog_button_cancel">Cancel</string>
+    <string name="dialog_button_close">Close</string>
+    <string name="dialog_button_ok">OK</string>
+    <string name="dialog_title_update">New version available</string>
+    <string name="dialog_content_update">A newer version is released.  (%s)</string>
+    <string name="dialog_button_update">Update</string>
+    <string name="dialog_button_more_info">More Info</string>
+    <string name="edittext_error_required">Required</string>
+    <string name="dialog_content_wait">Please wait</string>
+    <string name="activity_title_settings">Settings</string>
+    <string name="preference_checkUpdate_title">Check updates automatically</string>
+    <string name="preference_checkUpdate_summary">Check available updates on startup</string>
+    <string name="preference_handleAudioFocus_title">Handle audio focus</string>
+    <string name="preference_handleAudioFocus_summary">Pause the player if another app starts playback</string>
+    <string name="preference_handleAudioBecomingNoisy_title">Pause on headset removal</string>
+    <string name="preference_handleAudioBecomingNoisy_summary">Pause the player if the headset is removed</string>
+    <string name="preference_lowQuality_title">Use low-quality sources</string>
+    <string name="preference_lowQuality_summary">Use low-quality sources to reduce network data (if possible)</string>
+    <string name="preference_general">General</string>
+    <string name="preference_playback">Playback</string>
 </resources>

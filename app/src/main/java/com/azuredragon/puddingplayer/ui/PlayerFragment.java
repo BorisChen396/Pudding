@@ -130,6 +130,7 @@ class PlayerFragment {
         TextView largeDuration = largePlayer.findViewById(R.id.player_large_duration);
         ProgressBar smallProgressBar = smallPlayer.findViewById(R.id.player_small_progress);
         ProgressBar largeProgressBar = largePlayer.findViewById(R.id.player_large_progress);
+        ImageView largeArtwork = largePlayer.findViewById(R.id.player_large_artwork);
 
         largeAuthor.setText(metadata.getText(MediaMetadataCompat.METADATA_KEY_AUTHOR));
         largeDuration.setText(Utils.secondToString(metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION) / 1000));
@@ -137,11 +138,12 @@ class PlayerFragment {
         largeTitle.setText(metadata.getText(MediaMetadataCompat.METADATA_KEY_TITLE));
         smallProgressBar.setMax((int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION));
         largeProgressBar.setMax((int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION));
+        Bitmap bm = BitmapFactory.decodeFile(new FileLoader(mActivity).APPLICATION_DATA_DIR + "thumbnail.jpg");
+        largeArtwork.setImageBitmap(bm);
     }
 
 
     private void refreshViewByState(PlaybackStateCompat state) {
-        ImageView largeArtwork = largePlayer.findViewById(R.id.player_large_artwork);
         ImageButton smallPlayButton = smallPlayer.findViewById(R.id.player_small_playPause);
         ImageButton largePlayButton = largePlayer.findViewById(R.id.player_large_playPause);
         switch (state.getState()) {
@@ -189,8 +191,6 @@ class PlayerFragment {
                 largePlayButton.setImageDrawable(mActivity.getDrawable(R.drawable.btn_play));
                 break;
         }
-        Bitmap bm = BitmapFactory.decodeFile(new FileLoader(mActivity).APPLICATION_DATA_DIR + "thumbnail.jpg");
-        largeArtwork.setImageBitmap(bm);
     }
 
     BottomSheetBehavior.BottomSheetCallback bottomSheetCallback = new BottomSheetBehavior.BottomSheetCallback() {

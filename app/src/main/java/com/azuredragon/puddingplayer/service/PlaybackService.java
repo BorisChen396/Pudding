@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -21,6 +22,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.media.MediaBrowserServiceCompat;
+import androidx.preference.PreferenceManager;
 
 import com.azuredragon.puddingplayer.FileLoader;
 import com.azuredragon.puddingplayer.R;
@@ -48,6 +50,7 @@ public class PlaybackService extends MediaBrowserServiceCompat {
     private PlayerNotificationManager notifyManager;
     private String TAG = "PlaybackService";
     private SimpleExoPlayer player;
+    private SharedPreferences settings;
 
     @Nullable
     @Override
@@ -61,6 +64,9 @@ public class PlaybackService extends MediaBrowserServiceCompat {
     @Override
     public void onCreate() {
         super.onCreate();
+        settings = PreferenceManager.getDefaultSharedPreferences(this);
+        settings.registerOnSharedPreferenceChangeListener(settingsListener);
+
         notifyManager = getNotificationManager();
 
         mSession = new PuddingSession(this, notifyManager);
@@ -139,6 +145,14 @@ public class PlaybackService extends MediaBrowserServiceCompat {
         connector.setPlayer(player);
     }
 
+    SharedPreferences.OnSharedPreferenceChangeListener settingsListener = (sharedPreferences, key) -> {
+        if(player == null) return;
+        if(key.equals("handleAudioFocus"))
+            player.setAudioAttributes(player.getAudioAttributes(), sharedPreferences.getBoolean(key, true));
+        if(key.equals("handleAudioBecomingNoisy"))
+            player.setHandleAudioBecomingNoisy(sharedPreferences.getBoolean(key, true));
+    };
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -146,6 +160,7 @@ public class PlaybackService extends MediaBrowserServiceCompat {
         if(mSession.getController().getPlaybackState().getState() != PlaybackStateCompat.STATE_NONE)
             mSession.getController().getTransportControls().stop();
 
+        settings.unregisterOnSharedPreferenceChangeListener(settingsListener);
         mSession.setActive(false);
         Log.i("", "Service stopped.");
     }
@@ -160,17 +175,19 @@ public class PlaybackService extends MediaBrowserServiceCompat {
                 .setAudioAttributes(new AudioAttributes.Builder()
                         .setContentType(C.CONTENT_TYPE_MUSIC)
                         .setUsage(C.USAGE_MEDIA)
-                        .build(), true)
+                        .build(), settings.getBoolean("handleAudioFocus", true))
                 .setMediaSourceFactory(new DefaultMediaSourceFactory(
                         new URLUpdatingDataSource.Factory(
                                 PlaybackService.this,
                                 new DefaultDataSourceFactory(PlaybackService.this)
                         )))
-                .setHandleAudioBecomingNoisy(true)
+                .setHandleAudioBecomingNoisy(settings.getBoolean("handleAudioBecomingNoisy", true))
                 .build();
         player.setPlayWhenReady(true);
         return player;
     }
+
+
 
     int MEDIA_NOTIFICATION_ID = "PUDDING_IS_GOOD".length();
     String channelId = "playerNotification";

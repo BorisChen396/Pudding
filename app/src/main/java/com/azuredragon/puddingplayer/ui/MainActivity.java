@@ -2,14 +2,18 @@ package com.azuredragon.puddingplayer.ui;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.media.MediaBrowserCompat;
@@ -42,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
     MediaControllerCompat controllerCompat;
     PlayerFragment playerFragment;
     RecyclerView playlist;
-    String currentVersion = "20210522";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +62,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         if(!browser.isConnected()) browser.connect();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (browser.isConnected()) browser.disconnect();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
     }
 
     @Override
@@ -80,17 +95,21 @@ public class MainActivity extends AppCompatActivity {
             playerFragment.behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
                 @Override
                 public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                    if(newState == BottomSheetBehavior.STATE_COLLAPSED)
-                        playlist.setPadding(0, 0, 0, Utils.dp2px(MainActivity.this, 70));
-                    else
-                        playlist.setPadding(0, 0, 0, 0);
+                    refreshPlaylistPadding();
                 }
 
                 @Override
-                public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-
-                }
+                public void onSlide(@NonNull View bottomSheet, float slideOffset) {}
             });
+            refreshPlaylistPadding();
+            handleSharedContent();
+        }
+
+        void refreshPlaylistPadding() {
+            if(playerFragment.behavior.getState() != BottomSheetBehavior.STATE_HIDDEN)
+                playlist.setPadding(0, 0, 0, Utils.dp2px(MainActivity.this, 70));
+            else
+                playlist.setPadding(0, 0, 0, 0);
         }
     };
 
@@ -117,13 +136,13 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_settings:
-                new SettingsDialog(this).show();
+                startActivity(new Intent(this, SettingsActivity.class));
                 return true;
             case R.id.action_about:
                 AlertDialog aboutDialog = new AlertDialog.Builder(MainActivity.this)
                         .setView(getLayoutInflater().inflate(R.layout.dialog_about, null))
-                        .setTitle("About")
-                        .setPositiveButton("Close", (dialog, which) -> dialog.dismiss())
+                        .setTitle(R.string.dialog_about_title)
+                        .setPositiveButton(R.string.dialog_button_close, (dialog, which) -> {})
                         .create();
                 aboutDialog.show();
                 return true;
@@ -133,9 +152,9 @@ public class MainActivity extends AppCompatActivity {
                 EditText linkEditText = view.findViewById(R.id.edit_text_add_item);
                 AlertDialog addDialog = new AlertDialog.Builder(MainActivity.this)
                         .setView(view)
-                        .setTitle("Add Item")
-                        .setNegativeButton("Cancel", (dialog, which) -> {})
-                        .setPositiveButton("Add", (dialog, which) ->
+                        .setTitle(R.string.dialog_add_item_title)
+                        .setNegativeButton(R.string.dialog_button_cancel, (dialog, which) -> {})
+                        .setPositiveButton(R.string.dialog_button_ok, (dialog, which) ->
                                 onSubmitLink(Utils.decodeYTLink(linkEditText.getText().toString())))
                         .create();
                 addDialog.show();
@@ -145,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
                         if(linkEditText.getText().length() != 0)
                             addDialog.getButton(DialogInterface.BUTTON_POSITIVE).performClick();
                         else
-                            inputLayout.setError("Required");
+                            inputLayout.setError(getString(R.string.edittext_error_required));
                         return true;
                     }
                     return false;
@@ -154,7 +173,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
                         addDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(linkEditText.getText().length() != 0);
-                        if(linkEditText.getText().length() == 0) inputLayout.setError("Required");
+                        if(linkEditText.getText().length() == 0)
+                            inputLayout.setError(getString(R.string.edittext_error_required));
                         else inputLayout.setError(null);
                     }
 
@@ -170,11 +190,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    void handleSharedContent() {
+        String action = getIntent().getAction();
+        String type = getIntent().getType();
+        String data = getIntent().getStringExtra(Intent.EXTRA_TEXT);
+        if(Intent.ACTION_SEND.equals(action) && "text/plain".equals(type)) {
+            if(data != null) onSubmitLink(Utils.decodeYTLink(data));
+            setIntent(getIntent().putExtra(Intent.EXTRA_TEXT, ""));
+        }
+    }
+
     void refreshPlaylist(List<MediaSessionCompat.QueueItem> queue) {
         playlist = findViewById(R.id.playlist);
         playlist.setLayoutManager(new LinearLayoutManager(this));
         playlist.setAdapter(new PlaylistItemAdapter(queue, controllerCompat, MainActivity.this));
-        Log.i("", queue.size() + "");
     }
 
     void addItemByVideoId(String videoId) {
@@ -188,8 +217,8 @@ public class MainActivity extends AppCompatActivity {
 
     void addItemByListId(String listId) {
         ProgressDialog dialog = new ProgressDialog(MainActivity.this);
-        dialog.setTitle("Adding Playlist");
-        dialog.setMessage("Please wait...");
+        dialog.setTitle(R.string.dialog_add_item_title);
+        dialog.setMessage(getString(R.string.dialog_content_wait));
         dialog.setCancelable(false);
         dialog.show();
         new Thread(() -> {
@@ -205,11 +234,11 @@ public class MainActivity extends AppCompatActivity {
     void onSubmitLink(Bundle linkInfo) {
         if(linkInfo.getString("videoId") != null && linkInfo.getString("listId") != null) {
             new AlertDialog.Builder(MainActivity.this)
-                    .setTitle("Confirm")
+                    .setTitle(R.string.dialog_add_item_title)
                     .setMessage(String.format(getString(R.string.dialog_add_all_items), linkInfo.getString("listId")))
-                    .setPositiveButton("Add All", (dialog, which) ->
+                    .setPositiveButton(R.string.dialog_button_add_all, (dialog, which) ->
                             addItemByListId(linkInfo.getString("listId")))
-                    .setNegativeButton("Only the video", (dialog, which) ->
+                    .setNegativeButton(R.string.dialog_button_only_one, (dialog, which) ->
                             addItemByVideoId(linkInfo.getString("videoId")))
                     .show();
             return;
@@ -219,6 +248,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void checkUpdate() {
+        boolean autoCheck = PreferenceManager.getDefaultSharedPreferences(this)
+                .getBoolean("checkUpdate", true);
+        if(!autoCheck) return;
+
+        String currentVersion = getVersionCode();
         String url = "https://raw.githubusercontent.com/BorisChen396/PuddingPlayer/master/VERSION";
         Bundle response;
         try {
@@ -232,25 +266,39 @@ public class MainActivity extends AppCompatActivity {
         if(!currentVersion.equals(version)) {
             runOnUiThread(() -> {
                 AlertDialog updateDialog = new AlertDialog.Builder(this)
-                        .setTitle("New version available")
-                        .setMessage("A newer version is released.  (" + version + ")")
-                        .setPositiveButton("Update", (dialog, which) -> {
+                        .setTitle(R.string.dialog_title_update)
+                        .setMessage(String.format(getString(R.string.dialog_content_update), version))
+                        .setPositiveButton(R.string.dialog_button_update, (dialog, which) -> {
                             Intent intent = new Intent();
                             intent.setAction(Intent.ACTION_VIEW);
                             intent.setData(Uri.parse(info.getQueryParameter("apk-url")));
                             startActivity(intent);
                         })
-                        .setNeutralButton("More Info", (dialog, which) -> {
+                        .setNeutralButton(R.string.dialog_button_more_info, (dialog, which) -> {
                             Intent intent = new Intent();
                             intent.setAction(Intent.ACTION_VIEW);
                             intent.setData(Uri.parse(info.getQueryParameter("url")));
                             startActivity(intent);
                         })
-                        .setNegativeButton("Cancel", (dialog, which) -> {
+                        .setNegativeButton(R.string.dialog_button_cancel, (dialog, which) -> {
                         })
                         .setCancelable(true).create();
                 updateDialog.show();
             });
         }
+    }
+
+
+    public String getVersionCode(){
+        PackageManager packageManager = getPackageManager();
+        PackageInfo packageInfo;
+        String versionCode = "";
+        try {
+            packageInfo = packageManager.getPackageInfo(getPackageName(),0);
+            versionCode = String.valueOf(packageInfo.versionCode);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return versionCode;
     }
 }

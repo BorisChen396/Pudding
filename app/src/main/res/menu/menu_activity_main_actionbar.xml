@@ -3,14 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/action_add"
         android:icon="@drawable/ic_baseline_add_24"
-        android:title="Add Item"
+        android:title="@string/dialog_add_item_title"
         app:showAsAction="ifRoom" />
 
     <item android:id="@+id/action_settings"
-        android:title="Settings"
+        android:title="@string/activity_title_settings"
         app:showAsAction="never"/>
 
     <item android:id="@+id/action_about"
-        android:title="About"
+        android:title="@string/dialog_about_title"
         app:showAsAction="never"/>
 </menu>

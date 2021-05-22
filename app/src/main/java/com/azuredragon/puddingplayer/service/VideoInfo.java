@@ -8,6 +8,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.preference.PreferenceManager;
 
 import com.azuredragon.puddingplayer.NetworkHandler;
 import com.azuredragon.puddingplayer.R;
@@ -114,9 +115,9 @@ public class VideoInfo {
         }
 
         JSONObject selected;
-        boolean highQuality = mContext.getSharedPreferences("settings", Context.MODE_PRIVATE)
-                .getBoolean("highQuality", true);
-        if(!highQuality && audios.has("LOW")) selected = audios.optJSONObject("LOW");
+        boolean lowQuality = PreferenceManager.getDefaultSharedPreferences(mContext)
+                .getBoolean("lowQuality", false);
+        if(lowQuality && audios.has("LOW")) selected = audios.optJSONObject("LOW");
         else selected = audios.optJSONObject("MEDIUM");
 
         final Bundle bundle = new Bundle();

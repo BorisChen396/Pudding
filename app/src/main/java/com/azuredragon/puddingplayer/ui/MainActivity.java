@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     MediaControllerCompat controllerCompat;
     PlayerFragment playerFragment;
     RecyclerView playlist;
-    String currentVersion = "20210516";
+    String currentVersion = "20210522";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

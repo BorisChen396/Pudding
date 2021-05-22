@@ -28,9 +28,6 @@ public class VideoInfo {
     private String decipherUrl = "https://raw.githubusercontent.com/BorisChen396/PuddingPlayer/master/DECIPHER";
     private Uri decipher;
 
-    public int AUDIO_QUALITY_LOW = 0;
-    public int AUDIO_QUALITY_HIGH = 1;
-
     @SuppressLint({"SetJavaScriptEnabled", "JavascriptInterface"})
     public VideoInfo(@NonNull Context context, @NonNull String videoId) {
         mContext = context;
@@ -55,6 +52,7 @@ public class VideoInfo {
                 .scheme("https")
                 .authority("www.youtube.com")
                 .appendPath("get_video_info")
+                .appendQueryParameter("html5", "1")
                 .appendQueryParameter("eurl", "https://youtube.googleapis.com")
                 .appendQueryParameter("sts", sts)
                 .appendQueryParameter("video_id", mVideoId)
@@ -93,21 +91,43 @@ public class VideoInfo {
     }
 
     private String getAudioLink(@Nullable JSONArray adaptiveFormats) {
-        final JSONArray array = new JSONArray();
+        final JSONObject audios = new JSONObject();
         if(adaptiveFormats == null) {
             Log.e(TAG, "Object should not be null.");
             return "";
         }
-        for(int i = 0; i < adaptiveFormats.length(); i++) {
-            if(adaptiveFormats.optJSONObject(i).has("audioQuality"))
-                array.put(adaptiveFormats.optJSONObject(i));
+
+        try {
+            for(int i = 0; i < adaptiveFormats.length(); i++) {
+                JSONObject item = adaptiveFormats.optJSONObject(i);
+                if(item.has("audioQuality")) {
+                    String quality = item.optString("audioQuality");
+                    if(quality.equals("AUDIO_QUALITY_MEDIUM"))
+                        audios.put("MEDIUM", item);
+                    if(quality.equals("AUDIO_QUALITY_LOW"))
+                        audios.put("LOW", item);
+                }
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage());
+            return "";
         }
+
+        JSONObject selected;
+        boolean highQuality = mContext.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                .getBoolean("highQuality", true);
+        if(!highQuality && audios.has("LOW")) selected = audios.optJSONObject("LOW");
+        else selected = audios.optJSONObject("MEDIUM");
 
         final Bundle bundle = new Bundle();
         bundle.putLong("duration", Long.parseLong(playerResponse.optJSONObject("videoDetails").optString("lengthSeconds")));
 
-        if(array.optJSONObject(0).has("signatureCipher")) {
-            Uri signatureCipher = Uri.parse("http://example.com/?" + array.optJSONObject(0).optString("signatureCipher"));
+        if(selected == null) {
+            Log.e(TAG, "Selected item should not be null.");
+            return "";
+        }
+        if(selected.has("signatureCipher")) {
+            Uri signatureCipher = Uri.parse("http://example.com/?" + selected.optString("signatureCipher"));
             V8 runtime = V8.createV8Runtime();
             runtime.executeScript(decipher.getQueryParameter("decipher"));
             String sig = runtime.executeStringScript("getDecipher(\"" + signatureCipher.getQueryParameter("s") + "\")");
@@ -118,7 +138,7 @@ public class VideoInfo {
             return url.toString();
         }
         else {
-            return array.optJSONObject(0).optString("url") + "&video_id=" + mVideoId;
+            return selected.optString("url") + "&video_id=" + mVideoId;
         }
     }
 }

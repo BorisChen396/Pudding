@@ -35,10 +35,7 @@ import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.audio.AudioAttributes;
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector;
 import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator;
-import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
-import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.ui.PlayerNotificationManager;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 
@@ -242,6 +239,12 @@ public class PlaybackService extends MediaBrowserServiceCompat {
         public void setMetadata(MediaMetadataCompat metadata) {
             super.setMetadata(metadata);
             mNotificationManager.invalidate();
+        }
+
+        @Override
+        public void setQueue(List<QueueItem> queue) {
+            super.setQueue(queue);
+
         }
     }
 }

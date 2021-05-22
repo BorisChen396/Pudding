@@ -2,7 +2,6 @@ package com.azuredragon.puddingplayer.ui;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -21,14 +20,11 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import com.azuredragon.puddingplayer.NetworkHandler;
 import com.azuredragon.puddingplayer.Utils;
@@ -36,7 +32,6 @@ import com.azuredragon.puddingplayer.YoutubeAPIv3;
 import com.azuredragon.puddingplayer.service.PlaybackService;
 import com.azuredragon.puddingplayer.R;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.IOException;
@@ -121,6 +116,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_settings:
+                new SettingsDialog(this).show();
+                return true;
             case R.id.action_about:
                 AlertDialog aboutDialog = new AlertDialog.Builder(MainActivity.this)
                         .setView(getLayoutInflater().inflate(R.layout.dialog_about, null))

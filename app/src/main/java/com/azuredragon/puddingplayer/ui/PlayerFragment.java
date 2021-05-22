@@ -1,15 +1,12 @@
 package com.azuredragon.puddingplayer.ui;
 
-import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -19,14 +16,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.azuredragon.puddingplayer.FileLoader;
 import com.azuredragon.puddingplayer.R;
 import com.azuredragon.puddingplayer.Utils;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-
-import java.io.File;
 
 class PlayerFragment {
     private AppCompatActivity mActivity;

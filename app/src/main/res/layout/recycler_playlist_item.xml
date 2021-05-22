@@ -28,7 +28,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginLeft="20dp"
         android:paddingBottom="5dp"
-        style="@style/Theme.AppCompat"
+        android:textAppearance="?textAppearanceListItem"
         android:maxLines="1"
         android:ellipsize="end"/>
 
@@ -40,6 +40,7 @@
         app:layout_constraintTop_toBottomOf="@id/playlist_item_title"
         app:layout_constraintEnd_toEndOf="parent"
         android:maxLines="1"
-        android:ellipsize="end" />
+        android:ellipsize="end"
+        android:textAppearance="?textAppearanceListItemSecondary" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

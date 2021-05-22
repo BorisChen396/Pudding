@@ -5,7 +5,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.util.Log;
 
@@ -19,8 +18,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-
-import static java.net.HttpURLConnection.HTTP_OK;
 
 public class MetadataProvider implements MediaSessionConnector.MediaMetadataProvider {
     private Context mContext;

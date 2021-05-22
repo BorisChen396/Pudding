@@ -1,16 +1,9 @@
 package com.azuredragon.puddingplayer;
 
 import android.content.Context;
-import android.media.MediaRouter;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.TypedValue;
-import android.widget.Toast;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.Locale;
 

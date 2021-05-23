@@ -10,9 +10,8 @@ android {
         applicationId "com.azuredragon.puddingplayer"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 20210523
-        versionName "1.0.3"
-
+        versionCode 20210524
+        versionName "1.0.4"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 

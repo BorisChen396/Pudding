@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory android:title="@string/preference_general">
 
@@ -8,6 +9,13 @@
             android:key="checkUpdate"
             android:title="@string/preference_checkUpdate_title"
             android:summary="@string/preference_checkUpdate_summary" />
+        <ListPreference
+            android:defaultValue="default"
+            android:entries="@array/preference_theme_entry"
+            android:entryValues="@array/preference_theme_entryValue"
+            android:key="theme"
+            android:title="@string/preference_theme"
+            app:useSimpleSummaryProvider="true"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/preference_playback">
 

@@ -2,20 +2,28 @@ package com.azuredragon.puddingplayer.ui;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.AlertDialog;
+import android.app.DownloadManager;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.CursorIndexOutOfBoundsException;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.session.MediaControllerCompat;
@@ -29,6 +37,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.azuredragon.puddingplayer.NetworkHandler;
 import com.azuredragon.puddingplayer.Utils;
@@ -38,6 +47,7 @@ import com.azuredragon.puddingplayer.R;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -263,17 +273,13 @@ public class MainActivity extends AppCompatActivity {
         }
         Uri info = Uri.parse("https://example.com/?" + response.getString("response"));
         String version = info.getQueryParameter("version");
-        if(!currentVersion.equals(version)) {
+        if(!currentVersion.equals(version) && version != null) {
             runOnUiThread(() -> {
                 AlertDialog updateDialog = new AlertDialog.Builder(this)
                         .setTitle(R.string.dialog_title_update)
                         .setMessage(String.format(getString(R.string.dialog_content_update), version))
-                        .setPositiveButton(R.string.dialog_button_update, (dialog, which) -> {
-                            Intent intent = new Intent();
-                            intent.setAction(Intent.ACTION_VIEW);
-                            intent.setData(Uri.parse(info.getQueryParameter("apk-url")));
-                            startActivity(intent);
-                        })
+                        .setPositiveButton(R.string.dialog_button_update, (dialog, which) ->
+                                downloadApk(info.getQueryParameter("apk-url")))
                         .setNeutralButton(R.string.dialog_button_more_info, (dialog, which) -> {
                             Intent intent = new Intent();
                             intent.setAction(Intent.ACTION_VIEW);
@@ -288,6 +294,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    void downloadApk(String url) {
+        DownloadManager manager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        DownloadManager.Request request =
+                new DownloadManager.Request(Uri.parse(url));
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "Pudding.apk");
+        registerReceiver(new DownloadReceiver(manager, manager.enqueue(request)),
+                new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+        Toast.makeText(this, R.string.toast_update_start, Toast.LENGTH_LONG).show();
+    }
 
     public String getVersionCode(){
         PackageManager packageManager = getPackageManager();
@@ -300,5 +315,55 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return versionCode;
+    }
+
+    static class DownloadReceiver extends BroadcastReceiver {
+        private final long downloadId;
+        private DownloadManager mManager;
+
+        DownloadReceiver(DownloadManager manager, long id) {
+            downloadId = id;
+            mManager = manager;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction())) {
+                long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0);
+                if(downloadId != id) return;
+                DownloadManager.Query q = new DownloadManager.Query();
+                q.setFilterById(id);
+                Cursor result = mManager.query(q);
+                result.moveToFirst();
+                int statusIndex = result.getColumnIndex(DownloadManager.COLUMN_STATUS);
+                try {
+                    if(result.getInt(statusIndex) != DownloadManager.STATUS_SUCCESSFUL) {
+                        Toast.makeText(context, R.string.toast_update_failed, Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                } catch (CursorIndexOutOfBoundsException e) {
+                    Log.e("Update", e.getMessage());
+                    Toast.makeText(context, R.string.toast_update_failed, Toast.LENGTH_LONG).show();
+                    return;
+                }
+                int uriIndex = result.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI);
+                Uri fileUri = Uri.parse(result.getString(uriIndex));
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    Uri uri = FileProvider.getUriForFile(context,
+                            "com.azuredragon.puddingplayer.provider", new File(fileUri.getPath()));
+                    intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
+                    intent.setData(uri);
+                    intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                }
+                else {
+                    intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setDataAndType(fileUri, "application/vnd.android.package-archive");
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                }
+                context.startActivity(intent);
+                context.unregisterReceiver(this);
+                result.close();
+            }
+        }
     }
 }

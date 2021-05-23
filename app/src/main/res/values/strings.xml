@@ -18,7 +18,7 @@
     <string name="dialog_button_close">Close</string>
     <string name="dialog_button_ok">OK</string>
     <string name="dialog_title_update">New version available</string>
-    <string name="dialog_content_update">A newer version is released.  (%s)</string>
+    <string name="dialog_content_update">A newer version is released.  (%s)\n\nWarning: Do not exit the app while updating.</string>
     <string name="dialog_button_update">Update</string>
     <string name="dialog_button_more_info">More Info</string>
     <string name="edittext_error_required">Required</string>
@@ -34,4 +34,18 @@
     <string name="preference_lowQuality_summary">Use low-quality sources to reduce network data (if possible)</string>
     <string name="preference_general">General</string>
     <string name="preference_playback">Playback</string>
+    <string name="preference_theme">Theme</string>
+
+    <string-array name="preference_theme_entry">
+        <item>Default</item>
+        <item>Light theme</item>
+        <item>Dark theme</item>
+    </string-array>
+    <string-array name="preference_theme_entryValue">
+        <item>default</item>
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
+    <string name="toast_update_start">The file will be saved to the Download folder.  Check the notification for more information.</string>
+    <string name="toast_update_failed">Failed to download the update file.</string>
 </resources>

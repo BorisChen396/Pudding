@@ -46,6 +46,7 @@ class PlayerFragment {
             behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
         });
         initializeTransportControls();
+        initializeView();
     }
 
     MediaControllerCompat.Callback controllerCallback = new MediaControllerCompat.Callback() {
@@ -81,12 +82,41 @@ class PlayerFragment {
         }
     };
 
+    void initializeView() {
+        ImageButton largeRepeatButton = largePlayer.findViewById(R.id.player_large_repeat);
+        ImageButton largeShuffleButton = largePlayer.findViewById(R.id.player_large_shuffle);
+
+        switch(controller.getRepeatMode()) {
+            case PlaybackStateCompat.REPEAT_MODE_NONE:
+                largeRepeatButton.setImageDrawable(mActivity.getDrawable(R.drawable.ic_baseline_repeat_24));
+                largeRepeatButton.setImageAlpha(128);
+                break;
+            case PlaybackStateCompat.REPEAT_MODE_ALL:
+                largeRepeatButton.setImageDrawable(mActivity.getDrawable(R.drawable.ic_baseline_repeat_24));
+                largeRepeatButton.setImageAlpha(255);
+                break;
+            case PlaybackStateCompat.REPEAT_MODE_ONE:
+                largeRepeatButton.setImageDrawable(mActivity.getDrawable(R.drawable.ic_baseline_repeat_one_24));
+                break;
+        }
+        switch(controller.getShuffleMode()) {
+            case PlaybackStateCompat.SHUFFLE_MODE_NONE:
+                largeShuffleButton.setImageAlpha(128);
+                break;
+            case PlaybackStateCompat.SHUFFLE_MODE_ALL:
+                largeShuffleButton.setImageAlpha(255);
+                break;
+        }
+    }
+
     boolean isTracking = false;
     private void initializeTransportControls() {
         ImageButton smallPlayButton = smallPlayer.findViewById(R.id.player_small_playPause);
         ImageButton largePlayButton = largePlayer.findViewById(R.id.player_large_playPause);
         ImageButton largePrevButton = largePlayer.findViewById(R.id.player_large_prev);
         ImageButton largeNextButton = largePlayer.findViewById(R.id.player_large_next);
+        ImageButton largeRepeatButton = largePlayer.findViewById(R.id.player_large_repeat);
+        ImageButton largeShuffleButton = largePlayer.findViewById(R.id.player_large_shuffle);
         SeekBar largeSeekBar = largePlayer.findViewById(R.id.player_large_progress);
         TextView largePosition = largePlayer.findViewById(R.id.player_large_current);
 
@@ -104,6 +134,36 @@ class PlayerFragment {
         });
         largePrevButton.setOnClickListener((v) -> controller.getTransportControls().skipToPrevious());
         largeNextButton.setOnClickListener((v) -> controller.getTransportControls().skipToNext());
+        largeRepeatButton.setOnClickListener((v) -> {
+            switch(controller.getRepeatMode()) {
+                case PlaybackStateCompat.REPEAT_MODE_NONE:
+                    controller.getTransportControls().setRepeatMode(PlaybackStateCompat.REPEAT_MODE_ALL);
+                    largeRepeatButton.setImageDrawable(mActivity.getDrawable(R.drawable.ic_baseline_repeat_24));
+                    largeRepeatButton.setImageAlpha(255);
+                    break;
+                case PlaybackStateCompat.REPEAT_MODE_ALL:
+                    controller.getTransportControls().setRepeatMode(PlaybackStateCompat.REPEAT_MODE_ONE);
+                    largeRepeatButton.setImageDrawable(mActivity.getDrawable(R.drawable.ic_baseline_repeat_one_24));
+                    break;
+                case PlaybackStateCompat.REPEAT_MODE_ONE:
+                    controller.getTransportControls().setRepeatMode(PlaybackStateCompat.REPEAT_MODE_NONE);
+                    largeRepeatButton.setImageDrawable(mActivity.getDrawable(R.drawable.ic_baseline_repeat_24));
+                    largeRepeatButton.setImageAlpha(128);
+                    break;
+            }
+        });
+        largeShuffleButton.setOnClickListener((v) -> {
+            switch(controller.getShuffleMode()) {
+                case PlaybackStateCompat.SHUFFLE_MODE_NONE:
+                    controller.getTransportControls().setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_ALL);
+                    largeShuffleButton.setImageAlpha(255);
+                    break;
+                case PlaybackStateCompat.SHUFFLE_MODE_ALL:
+                    controller.getTransportControls().setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_NONE);
+                    largeShuffleButton.setImageAlpha(128);
+                    break;
+            }
+        });
         largeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {

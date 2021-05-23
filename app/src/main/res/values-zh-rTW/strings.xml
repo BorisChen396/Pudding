@@ -18,20 +18,34 @@
     <string name="dialog_button_close">關閉</string>
     <string name="dialog_button_ok">確定</string>
     <string name="dialog_title_update">有可用的更新版本</string>
-    <string name="dialog_content_update">新版本已推出。(%s)</string>
+    <string name="dialog_content_update">新版本已推出。(%s)\n\n注意：更新時請勿離開程式</string>
     <string name="dialog_button_update">更新</string>
     <string name="dialog_button_more_info">更多資訊</string>
-    <string name="edittext_error_required">不可留白</string>
-    <string name="dialog_content_wait">請稍後</string>
+    <string name="edittext_error_required">必填</string>
+    <string name="dialog_content_wait">請稍候</string>
     <string name="activity_title_settings">設定</string>
     <string name="preference_checkUpdate_title">自動檢查更新</string>
     <string name="preference_checkUpdate_summary">在啟動時自動檢查更新</string>
     <string name="preference_handleAudioFocus_title">處理音訊焦點</string>
     <string name="preference_handleAudioFocus_summary">當其他程式播放音訊時暫停播放器</string>
     <string name="preference_handleAudioBecomingNoisy_title">在耳機移除時暫停</string>
-    <string name="preference_handleAudioBecomingNoisy_summary">當耳機拔出時暫停播放器</string>
+    <string name="preference_handleAudioBecomingNoisy_summary">當移除耳機時暫停播放器</string>
     <string name="preference_lowQuality_title">使用低音質來源</string>
     <string name="preference_lowQuality_summary">盡可能使用低音質來源以節省流量</string>
     <string name="preference_general">一般</string>
     <string name="preference_playback">播放</string>
+    <string name="preference_theme">主題</string>
+
+    <string-array name="preference_theme_entry">
+        <item>預設</item>
+        <item>淺色主題</item>
+        <item>深色主題</item>
+    </string-array>
+    <string-array name="preference_theme_entryValue">
+        <item>default</item>
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
+    <string name="toast_update_start">檔案會儲存在下載資料夾裡，查看通知以獲得其他資訊</string>
+    <string name="toast_update_failed">無法下載更新檔</string>
 </resources>

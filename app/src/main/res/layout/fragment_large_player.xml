@@ -94,9 +94,18 @@
             android:orientation="horizontal">
 
             <ImageButton
+                android:id="@+id/player_large_repeat"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginHorizontal="10dp"
+                android:background="?android:attr/selectableItemBackground"
+                app:srcCompat="@drawable/ic_baseline_repeat_24" />
+
+            <ImageButton
                 android:id="@+id/player_large_prev"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
+                android:layout_marginHorizontal="10dp"
                 android:background="?android:attr/selectableItemBackground"
                 app:srcCompat="@drawable/btn_prev" />
 
@@ -104,7 +113,7 @@
                 android:id="@+id/player_large_playPause"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:layout_marginHorizontal="25dp"
+                android:layout_marginHorizontal="10dp"
                 android:background="?android:attr/selectableItemBackground"
                 app:srcCompat="@drawable/btn_play" />
 
@@ -112,8 +121,17 @@
                 android:id="@+id/player_large_next"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
+                android:layout_marginHorizontal="10dp"
                 android:background="?android:attr/selectableItemBackground"
                 app:srcCompat="@drawable/btn_next" />
+
+            <ImageButton
+                android:id="@+id/player_large_shuffle"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginHorizontal="10dp"
+                android:background="?android:attr/selectableItemBackground"
+                app:srcCompat="@drawable/ic_baseline_shuffle_24" />
         </LinearLayout>
 
     </LinearLayout>

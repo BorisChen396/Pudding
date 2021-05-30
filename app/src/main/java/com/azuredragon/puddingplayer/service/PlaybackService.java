@@ -31,11 +31,13 @@ import com.azuredragon.puddingplayer.service.player.URLUpdatingDataSource;
 import com.azuredragon.puddingplayer.ui.MainActivity;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ControlDispatcher;
+import com.google.android.exoplayer2.DefaultControlDispatcher;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.audio.AudioAttributes;
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector;
+import com.google.android.exoplayer2.ext.mediasession.TimelineQueueEditor;
 import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator;
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.google.android.exoplayer2.ui.PlayerNotificationManager;
@@ -51,6 +53,7 @@ public class PlaybackService extends MediaBrowserServiceCompat {
     private String TAG = "PlaybackService";
     private SimpleExoPlayer player;
     private SharedPreferences settings;
+    private List<MediaDescriptionCompat> descriptions = new ArrayList<>();
 
     @Nullable
     @Override
@@ -80,7 +83,6 @@ public class PlaybackService extends MediaBrowserServiceCompat {
             @Override
             public void onSkipToQueueItem(final Player mPlayer, ControlDispatcher controlDispatcher, long id) {
                 super.onSkipToQueueItem(player, controlDispatcher, id);
-                Log.i(TAG, player.getMediaItemCount() + "");
                 player.seekToDefaultPosition((int) id);
                 player.prepare();
                 notifyManager.setPlayer(player);
@@ -89,7 +91,14 @@ public class PlaybackService extends MediaBrowserServiceCompat {
 
             @Override
             public MediaDescriptionCompat getMediaDescription(Player mPlayer, int windowIndex) {
-                return mSession.getController().getQueue().get(windowIndex).getDescription();
+                MediaDescriptionCompat des;
+                try {
+                    des = descriptions.get(windowIndex);
+                }
+                catch (IndexOutOfBoundsException e) {
+                    des = null;
+                }
+                return des;
             }
 
             @Override
@@ -102,7 +111,7 @@ public class PlaybackService extends MediaBrowserServiceCompat {
             @Override
             public void onAddQueueItem(Player mPlayer, MediaDescriptionCompat description) {
                 if(description.getExtras() == null) return;
-                onAddQueueItem(player, description, mSession.getController().getQueue().size());
+                this.onAddQueueItem(player, description, player.getMediaItemCount());
             }
 
             @Override
@@ -117,30 +126,35 @@ public class PlaybackService extends MediaBrowserServiceCompat {
                 player.addMediaItem(new MediaItem.Builder()
                                 .setUri(new Uri.Builder().appendQueryParameter("video_id", videoId).build())
                                 .build());
-                List<MediaSessionCompat.QueueItem> queue = mSession.getController().getQueue();
-                queue.add(index, new MediaSessionCompat.QueueItem(description, index));
-                mSession.setQueue(queue);
+                descriptions.add(index, description);
             }
 
             @Override
-            public void onRemoveQueueItem(Player mPlayer, MediaDescriptionCompat description) {
-                List<MediaSessionCompat.QueueItem> queue = mSession.getController().getQueue();
-                for(int i = 0; i < queue.size(); i++) {
-                    if(i == player.getCurrentPeriodIndex()) mSession.getController().getTransportControls().stop();
-                    if(queue.get(i).getDescription().getMediaUri() == description.getMediaUri()) {
-                        queue.remove(i);
-                        break;
-                    }
-                }
-                mSession.setQueue(queue);
-            }
+            public void onRemoveQueueItem(Player mPlayer, MediaDescriptionCompat description) {}
 
             @Override
             public boolean onCommand(Player mPlayer, ControlDispatcher controlDispatcher,
                                      String command, @Nullable Bundle extras, @Nullable ResultReceiver cb) {
-                return false;
+                switch (command) {
+                    default:
+                        return false;
+                    case TimelineQueueEditor.COMMAND_MOVE_QUEUE_ITEM:
+                        int from = extras.getInt(TimelineQueueEditor.EXTRA_FROM_INDEX);
+                        int to = extras.getInt(TimelineQueueEditor.EXTRA_TO_INDEX);
+                        player.moveMediaItem(from, to);
+                        MediaDescriptionCompat des = descriptions.get(to);
+                        descriptions.set(to, descriptions.get(from));
+                        descriptions.set(from, des);
+                        return true;
+                }
             }
         });
+        new DefaultControlDispatcher() {
+            @Override
+            public boolean dispatchSetShuffleModeEnabled(Player player, boolean shuffleModeEnabled) {
+                return super.dispatchSetShuffleModeEnabled(player, shuffleModeEnabled);
+            }
+        };
         player = createPlayer();
         connector.setPlayer(player);
     }
@@ -168,6 +182,10 @@ public class PlaybackService extends MediaBrowserServiceCompat {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    MediaDescriptionCompat getDescriptionByQueueId(long queueId) {
+        return descriptions.get((int) queueId);
     }
 
     SimpleExoPlayer createPlayer() {
@@ -256,12 +274,6 @@ public class PlaybackService extends MediaBrowserServiceCompat {
         public void setMetadata(MediaMetadataCompat metadata) {
             super.setMetadata(metadata);
             mNotificationManager.invalidate();
-        }
-
-        @Override
-        public void setQueue(List<QueueItem> queue) {
-            super.setQueue(queue);
-
         }
     }
 }

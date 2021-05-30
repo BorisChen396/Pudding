@@ -7,17 +7,16 @@
     <string name="error_no_internet">沒有網路連線</string>
     <string name="toast_playlist_error">無法取得清單資訊</string>
     <string name="error_http_error_404">連結不存在</string>
-    <string name="string_about">布丁超好吃！</string>
     <string name="string_add_item_hint">YouTube連結</string>
     <string name="dialog_add_all_items">這個連結包含一個播放清單(%s)。想要新增整個清單還是這個影片就好？</string>
     <string name="dialog_button_add_all">新增全部</string>
     <string name="dialog_button_only_one">影片就好</string>
-    <string name="dialog_about_title">關於</string>
+    <string name="preference_about">關於</string>
     <string name="dialog_add_item_title">新增項目</string>
     <string name="dialog_button_cancel">取消</string>
     <string name="dialog_button_close">關閉</string>
     <string name="dialog_button_ok">確定</string>
-    <string name="dialog_title_update">有可用的更新版本</string>
+    <string name="dialog_title_update">自動更新</string>
     <string name="dialog_content_update">新版本已推出。(%s)\n\n注意：更新時請勿離開程式</string>
     <string name="dialog_button_update">更新</string>
     <string name="dialog_button_more_info">更多資訊</string>
@@ -48,4 +47,7 @@
     </string-array>
     <string name="toast_update_start">檔案會儲存在下載資料夾裡，查看通知以獲得其他資訊</string>
     <string name="toast_update_failed">無法下載更新檔</string>
+    <string name="toast_save_playlist_failed">無法儲存播放清單\n%s</string>
+    <string name="toast_load_playlist_failed">無法讀取播放清單\n%s</string>
+    <string name="preference_versionName_title">版本</string>
 </resources>

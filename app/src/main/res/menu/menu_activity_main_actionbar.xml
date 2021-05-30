@@ -9,8 +9,4 @@
     <item android:id="@+id/action_settings"
         android:title="@string/activity_title_settings"
         app:showAsAction="never"/>
-
-    <item android:id="@+id/action_about"
-        android:title="@string/dialog_about_title"
-        app:showAsAction="never"/>
 </menu>

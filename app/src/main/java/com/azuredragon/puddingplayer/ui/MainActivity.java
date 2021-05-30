@@ -27,7 +27,6 @@ import android.os.Environment;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.session.MediaControllerCompat;
-import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -49,7 +48,6 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     MediaBrowserCompat browser;
@@ -100,7 +98,6 @@ public class MainActivity extends AppCompatActivity {
             super.onConnected();
             controllerCompat = new MediaControllerCompat(MainActivity.this, browser.getSessionToken());
             controllerCompat.registerCallback(controllerCallback);
-            refreshPlaylist(controllerCompat.getQueue());
             playerFragment = new PlayerFragment(MainActivity.this, controllerCompat);
             playerFragment.behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
                 @Override
@@ -111,6 +108,10 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onSlide(@NonNull View bottomSheet, float slideOffset) {}
             });
+            PlaylistItemAdapter playlistItemAdapter = new PlaylistItemAdapter(controllerCompat, MainActivity.this);
+            playlist = findViewById(R.id.playlist);
+            playlist.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+            playlist.setAdapter(playlistItemAdapter);
             refreshPlaylistPadding();
             handleSharedContent();
         }
@@ -128,12 +129,6 @@ public class MainActivity extends AppCompatActivity {
         public void onPlaybackStateChanged(PlaybackStateCompat state) {
             super.onPlaybackStateChanged(state);
         }
-
-        @Override
-        public void onQueueChanged(List<MediaSessionCompat.QueueItem> queue) {
-            super.onQueueChanged(queue);
-            refreshPlaylist(queue);
-        }
     };
 
     @Override
@@ -147,14 +142,6 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_settings:
                 startActivity(new Intent(this, SettingsActivity.class));
-                return true;
-            case R.id.action_about:
-                AlertDialog aboutDialog = new AlertDialog.Builder(MainActivity.this)
-                        .setView(getLayoutInflater().inflate(R.layout.dialog_about, null))
-                        .setTitle(R.string.dialog_about_title)
-                        .setPositiveButton(R.string.dialog_button_close, (dialog, which) -> {})
-                        .create();
-                aboutDialog.show();
                 return true;
             case R.id.action_add:
                 View view = getLayoutInflater().inflate(R.layout.dialog_add_item, null);
@@ -208,12 +195,6 @@ public class MainActivity extends AppCompatActivity {
             if(data != null) onSubmitLink(Utils.decodeYTLink(data));
             setIntent(getIntent().putExtra(Intent.EXTRA_TEXT, ""));
         }
-    }
-
-    void refreshPlaylist(List<MediaSessionCompat.QueueItem> queue) {
-        playlist = findViewById(R.id.playlist);
-        playlist.setLayoutManager(new LinearLayoutManager(this));
-        playlist.setAdapter(new PlaylistItemAdapter(queue, controllerCompat, MainActivity.this));
     }
 
     void addItemByVideoId(String videoId) {
@@ -299,8 +280,15 @@ public class MainActivity extends AppCompatActivity {
         DownloadManager.Request request =
                 new DownloadManager.Request(Uri.parse(url));
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "Pudding.apk");
-        registerReceiver(new DownloadReceiver(manager, manager.enqueue(request)),
+        long id = manager.enqueue(request);
+        ProgressDialog updateDialog = new ProgressDialog(this);
+        updateDialog.setTitle(R.string.dialog_title_update);
+        updateDialog.setMessage(getString(R.string.dialog_content_wait));
+        updateDialog.setOnCancelListener(dialog -> manager.remove(id));
+        updateDialog.create();
+        registerReceiver(new DownloadReceiver(manager, id, updateDialog::dismiss),
                 new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+        updateDialog.show();
         Toast.makeText(this, R.string.toast_update_start, Toast.LENGTH_LONG).show();
     }
 
@@ -320,10 +308,12 @@ public class MainActivity extends AppCompatActivity {
     static class DownloadReceiver extends BroadcastReceiver {
         private final long downloadId;
         private DownloadManager mManager;
+        private final OnEndedListener onEndedListener;
 
-        DownloadReceiver(DownloadManager manager, long id) {
+        DownloadReceiver(DownloadManager manager, long id, OnEndedListener onEnded) {
             downloadId = id;
             mManager = manager;
+            onEndedListener = onEnded;
         }
 
         @Override
@@ -331,6 +321,7 @@ public class MainActivity extends AppCompatActivity {
             if(DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction())) {
                 long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0);
                 if(downloadId != id) return;
+                onEndedListener.onEnded();
                 DownloadManager.Query q = new DownloadManager.Query();
                 q.setFilterById(id);
                 Cursor result = mManager.query(q);
@@ -364,6 +355,10 @@ public class MainActivity extends AppCompatActivity {
                 context.unregisterReceiver(this);
                 result.close();
             }
+        }
+
+        interface OnEndedListener {
+            void onEnded();
         }
     }
 }

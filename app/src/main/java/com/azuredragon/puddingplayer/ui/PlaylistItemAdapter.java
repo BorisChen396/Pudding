@@ -3,6 +3,7 @@ package com.azuredragon.puddingplayer.ui;
 import android.app.Activity;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
@@ -29,7 +30,7 @@ import java.util.concurrent.Executors;
 
 class PlaylistItemAdapter extends RecyclerView.Adapter<PlaylistItemAdapter.ViewHolder> {
     private final MediaControllerCompat mController;
-    private final List<MediaSessionCompat.QueueItem> mQueue;
+    private List<MediaSessionCompat.QueueItem> mQueue;
     private final Activity mActivity;
     private final ExecutorService executorService;
     private final String TAG = "PlaylistItemAdapter";
@@ -38,8 +39,10 @@ class PlaylistItemAdapter extends RecyclerView.Adapter<PlaylistItemAdapter.ViewH
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public ViewHolder(@NonNull View itemView, MediaControllerCompat controller) {
             super(itemView);
-            itemView.setOnClickListener(v ->
-                    controller.getTransportControls().skipToQueueItem(getAdapterPosition()));
+            itemView.setOnClickListener(v -> {
+                long id = controller.getQueue().get(getAdapterPosition()).getQueueId();
+                controller.getTransportControls().skipToQueueItem(id);
+            });
         }
 
         TextView getTitle() {
@@ -55,14 +58,21 @@ class PlaylistItemAdapter extends RecyclerView.Adapter<PlaylistItemAdapter.ViewH
         }
     }
 
-    public PlaylistItemAdapter(List<MediaSessionCompat.QueueItem> queue,
-                               MediaControllerCompat controller,
+    public PlaylistItemAdapter(MediaControllerCompat controller,
                                Activity activity) {
-        mQueue = queue;
+        mQueue = controller.getQueue();
         mController = controller;
         mActivity = activity;
 
         executorService = Executors.newSingleThreadExecutor();
+        controller.registerCallback(new MediaControllerCompat.Callback() {
+            @Override
+            public void onQueueChanged(List<MediaSessionCompat.QueueItem> queue) {
+                super.onQueueChanged(queue);
+                mQueue = queue;
+                notifyDataSetChanged();
+            }
+        });
     }
 
     @NonNull

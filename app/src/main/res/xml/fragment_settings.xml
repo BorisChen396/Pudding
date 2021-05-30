@@ -3,7 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory android:title="@string/preference_general">
-
         <SwitchPreference
             android:defaultValue="true"
             android:key="checkUpdate"
@@ -18,7 +17,6 @@
             app:useSimpleSummaryProvider="true"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/preference_playback">
-
         <SwitchPreference
             android:defaultValue="true"
             android:key="handleAudioFocus"
@@ -34,5 +32,10 @@
             android:key="lowQuality"
             android:title="@string/preference_lowQuality_title"
             android:summary="@string/preference_lowQuality_summary" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/preference_about">
+        <Preference
+            android:title="@string/preference_versionName_title"
+            android:summary="@string/versionName"/>
     </PreferenceCategory>
 </PreferenceScreen>

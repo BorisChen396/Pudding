@@ -7,17 +7,16 @@
     <string name="error_no_internet">Internet disconnected</string>
     <string name="toast_playlist_error">"Unable to get the playlist info. "</string>
     <string name="error_http_error_404">The requested URL could not be found</string>
-    <string name="string_about">Pudding is delicious!</string>
     <string name="string_add_item_hint">YouTube link</string>
     <string name="dialog_add_all_items">There is a list id (%s) in the link.  Would you like to add the whole playlist or just the specific video?</string>
     <string name="dialog_button_add_all">Add all</string>
     <string name="dialog_button_only_one">Only the video</string>
-    <string name="dialog_about_title">About</string>
+    <string name="preference_about">About</string>
     <string name="dialog_add_item_title">Add Item</string>
     <string name="dialog_button_cancel">Cancel</string>
     <string name="dialog_button_close">Close</string>
     <string name="dialog_button_ok">OK</string>
-    <string name="dialog_title_update">New version available</string>
+    <string name="dialog_title_update">Automatic Update</string>
     <string name="dialog_content_update">A newer version is released.  (%s)\n\nWarning: Do not exit the app while updating.</string>
     <string name="dialog_button_update">Update</string>
     <string name="dialog_button_more_info">More Info</string>
@@ -48,4 +47,8 @@
     </string-array>
     <string name="toast_update_start">The file will be saved to the Download folder.  Check the notification for more information.</string>
     <string name="toast_update_failed">Failed to download the update file.</string>
+    <string name="toast_save_playlist_failed">Unable to save playlist.\n%s</string>
+    <string name="toast_load_playlist_failed">Unable to load playlist.\n%s</string>
+    <string name="versionName" translatable="false">1.0.5</string>
+    <string name="preference_versionName_title">Version</string>
 </resources>

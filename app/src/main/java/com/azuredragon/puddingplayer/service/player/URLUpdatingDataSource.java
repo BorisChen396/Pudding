@@ -40,7 +40,7 @@ public final class URLUpdatingDataSource implements DataSource {
 
     @Override
     public long open(DataSpec dataSpec) throws IOException {
-        VideoInfo info = new VideoInfo(mContext, dataSpec.uri.getQueryParameter("video_id"));
+        VideoInfo info = new VideoInfo(mContext, dataSpec.uri.getQueryParameter("videoId"));
         updatedDataSpec = dataSpec;
         try {
             String url = info.getInfo();

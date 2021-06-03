@@ -10,15 +10,14 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/playlist"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_height="match_parent" />
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:id="@+id/container_bottomsheet">
 
-        <include layout="@layout/fragment_player" />
+        <include layout="@layout/fragment_player"/>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

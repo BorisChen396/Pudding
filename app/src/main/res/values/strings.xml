@@ -45,10 +45,14 @@
         <item>light</item>
         <item>dark</item>
     </string-array>
-    <string name="toast_update_start">The file will be saved to the Download folder.  Check the notification for more information.</string>
     <string name="toast_update_failed">Failed to download the update file.</string>
     <string name="toast_save_playlist_failed">Unable to save playlist.\n%s</string>
     <string name="toast_load_playlist_failed">Unable to load playlist.\n%s</string>
-    <string name="versionName" translatable="false">1.0.5</string>
+    <string name="snackbar_item_removed">Item removed</string>
+    <string name="snackbar_action_undo">Undo</string>
+    <string name="versionName" translatable="false">1.0.6</string>
     <string name="preference_versionName_title">Version</string>
+    <string name="action_reset_player">Clear Playlist</string>
+    <string name="dialog_title_confirm">Confirm</string>
+    <string name="dialog_clear_playlist">This will remove all items in the playlist.</string>
 </resources>

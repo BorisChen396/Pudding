@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
@@ -14,10 +15,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.azuredragon.puddingplayer.FileLoader;
 import com.azuredragon.puddingplayer.R;
+import com.google.android.exoplayer2.ext.mediasession.TimelineQueueEditor;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,12 +34,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 class PlaylistItemAdapter extends RecyclerView.Adapter<PlaylistItemAdapter.ViewHolder> {
-    private final MediaControllerCompat mController;
+    private MediaControllerCompat mController;
     private List<MediaSessionCompat.QueueItem> mQueue;
     private final Activity mActivity;
     private final ExecutorService executorService;
     private final String TAG = "PlaylistItemAdapter";
     private final List<String> downloadList = new ArrayList<>();
+    private RecyclerView mRecyclerView;
+    ItemTouchHelper touchHelper;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public ViewHolder(@NonNull View itemView, MediaControllerCompat controller) {
@@ -58,13 +65,16 @@ class PlaylistItemAdapter extends RecyclerView.Adapter<PlaylistItemAdapter.ViewH
         }
     }
 
-    public PlaylistItemAdapter(MediaControllerCompat controller,
-                               Activity activity) {
+    public PlaylistItemAdapter(Activity activity) {
+        mActivity = activity;
+        executorService = Executors.newSingleThreadExecutor();
+        touchHelper = new ItemTouchHelper(touchCallback);
+    }
+
+    void initializeController() {
+        MediaControllerCompat controller = MediaControllerCompat.getMediaController(mActivity);
         mQueue = controller.getQueue();
         mController = controller;
-        mActivity = activity;
-
-        executorService = Executors.newSingleThreadExecutor();
         controller.registerCallback(new MediaControllerCompat.Callback() {
             @Override
             public void onQueueChanged(List<MediaSessionCompat.QueueItem> queue) {
@@ -73,6 +83,71 @@ class PlaylistItemAdapter extends RecyclerView.Adapter<PlaylistItemAdapter.ViewH
                 notifyDataSetChanged();
             }
         });
+    }
+
+    ItemTouchHelper.Callback touchCallback = new ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP|ItemTouchHelper.DOWN,
+            ItemTouchHelper.LEFT|ItemTouchHelper.RIGHT) {
+        int fromPos = -1;
+        int toPos = -1;
+
+        @Override
+        public void onSelectedChanged(@Nullable RecyclerView.ViewHolder viewHolder, int actionState) {
+            super.onSelectedChanged(viewHolder, actionState);
+            if(actionState == ItemTouchHelper.ACTION_STATE_DRAG && viewHolder != null)
+                fromPos = viewHolder.getAdapterPosition();
+        }
+
+        @Override
+        public void clearView(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+            super.clearView(recyclerView, viewHolder);
+            if(fromPos >= 0 && toPos >= 0) {
+                Bundle params = new Bundle();
+                params.putInt(TimelineQueueEditor.EXTRA_FROM_INDEX, fromPos);
+                params.putInt(TimelineQueueEditor.EXTRA_TO_INDEX, toPos);
+                mController.sendCommand(TimelineQueueEditor.COMMAND_MOVE_QUEUE_ITEM, params, null);
+                fromPos = toPos = -1;
+            }
+        }
+
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView,
+                              @NonNull RecyclerView.ViewHolder viewHolder,
+                              @NonNull RecyclerView.ViewHolder target) {
+            int from = viewHolder.getAdapterPosition();
+            toPos = target.getAdapterPosition();
+            notifyItemMoved(from, toPos);
+            return true;
+        }
+
+        Snackbar itemRemovedSnackBar;
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+            int pos = viewHolder.getAdapterPosition();
+            MediaDescriptionCompat description = mQueue.get(pos).getDescription();
+            notifyItemRemoved(pos);
+            mController.removeQueueItem(mQueue.get(pos).getDescription());
+
+            if(itemRemovedSnackBar == null || itemRemovedSnackBar.isShown())
+                itemRemovedSnackBar = Snackbar.make(mActivity.findViewById(R.id.container_bottomsheet),
+                        R.string.snackbar_item_removed, Snackbar.LENGTH_LONG);
+            itemRemovedSnackBar.setAnchorView(R.id.bottomsheet_player);
+            itemRemovedSnackBar.setAction(R.string.snackbar_action_undo, v ->
+                    mController.addQueueItem(description, pos));
+            itemRemovedSnackBar.show();
+        }
+    };
+
+    View mPlayerView;
+    void setPlayerView(View playerView) {
+        mPlayerView = playerView;
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        mRecyclerView = recyclerView;
+        touchHelper.attachToRecyclerView(recyclerView);
     }
 
     @NonNull
@@ -141,6 +216,7 @@ class PlaylistItemAdapter extends RecyclerView.Adapter<PlaylistItemAdapter.ViewH
 
     @Override
     public int getItemCount() {
+        if(mQueue == null) return 0;
         return mQueue.size();
     }
 }

@@ -32,7 +32,7 @@ public class MetadataProvider implements MediaSessionConnector.MediaMetadataProv
     public MediaMetadataCompat getMetadata(Player player) {
         if(player.getCurrentMediaItem() == null || player.getCurrentMediaItem().playbackProperties == null)
             return new MediaMetadataCompat.Builder().build();
-        String videoId = player.getCurrentMediaItem().playbackProperties.uri.getQueryParameter("video_id");
+        String videoId = player.getCurrentMediaItem().playbackProperties.uri.getQueryParameter("videoId");
         FileLoader loader = new FileLoader(mContext);
         Uri cachedMetadata = Uri.parse(loader.loadFile(loader.APPLICATION_DATA_DIR + "metadata"));
         if(videoId == null) return new MediaMetadataCompat.Builder().build();

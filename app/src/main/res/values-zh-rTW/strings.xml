@@ -45,9 +45,13 @@
         <item>light</item>
         <item>dark</item>
     </string-array>
-    <string name="toast_update_start">檔案會儲存在下載資料夾裡，查看通知以獲得其他資訊</string>
     <string name="toast_update_failed">無法下載更新檔</string>
     <string name="toast_save_playlist_failed">無法儲存播放清單\n%s</string>
     <string name="toast_load_playlist_failed">無法讀取播放清單\n%s</string>
     <string name="preference_versionName_title">版本</string>
+    <string name="snackbar_item_removed">項目已移除</string>
+    <string name="snackbar_action_undo">復原</string>
+    <string name="action_reset_player">清空播放清單</string>
+    <string name="dialog_title_confirm">確認</string>
+    <string name="dialog_clear_playlist">將會刪除清單內的所有項目</string>
 </resources>

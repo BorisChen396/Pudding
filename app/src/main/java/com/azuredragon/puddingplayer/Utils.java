@@ -3,6 +3,7 @@ package com.azuredragon.puddingplayer;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 
 import java.util.Locale;
@@ -44,5 +45,10 @@ public class Utils {
     public static int dp2px(Context context, float dpVal) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 dpVal, context.getResources().getDisplayMetrics());
+    }
+
+    static public int getHeightPxWithContext(Context context) {
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        return displayMetrics.heightPixels;
     }
 }

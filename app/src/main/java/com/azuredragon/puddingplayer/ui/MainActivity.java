@@ -23,7 +23,6 @@ import android.database.CursorIndexOutOfBoundsException;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.session.MediaControllerCompat;
@@ -54,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     MediaControllerCompat controllerCompat;
     PlayerFragment playerFragment;
     RecyclerView playlist;
+    PlaylistItemAdapter playlistItemAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +64,11 @@ public class MainActivity extends AppCompatActivity {
                 connectionCallback,
                 null);
         new Thread(this::checkUpdate).start();
+        playlist = findViewById(R.id.playlist);
+        playlist.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+        playlistItemAdapter = new PlaylistItemAdapter(MainActivity.this);
+        playlist.setAdapter(playlistItemAdapter);
+        playlistItemAdapter.setPlayerView(findViewById(R.id.bottomsheet_player));
     }
 
     @Override
@@ -76,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         if (browser.isConnected()) browser.disconnect();
+        cancelUpdate();
     }
 
     @Override
@@ -97,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
         public void onConnected() {
             super.onConnected();
             controllerCompat = new MediaControllerCompat(MainActivity.this, browser.getSessionToken());
+            MediaControllerCompat.setMediaController(MainActivity.this, controllerCompat);
             controllerCompat.registerCallback(controllerCallback);
             playerFragment = new PlayerFragment(MainActivity.this, controllerCompat);
             playerFragment.behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
@@ -108,10 +115,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onSlide(@NonNull View bottomSheet, float slideOffset) {}
             });
-            PlaylistItemAdapter playlistItemAdapter = new PlaylistItemAdapter(controllerCompat, MainActivity.this);
-            playlist = findViewById(R.id.playlist);
-            playlist.setLayoutManager(new LinearLayoutManager(MainActivity.this));
-            playlist.setAdapter(playlistItemAdapter);
+            playlistItemAdapter.initializeController();
             refreshPlaylistPadding();
             handleSharedContent();
         }
@@ -140,6 +144,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_reset_player:
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.dialog_title_confirm)
+                        .setMessage(R.string.dialog_clear_playlist)
+                        .setPositiveButton(R.string.dialog_button_ok, (dialog, which) -> {
+                            if(controllerCompat != null)
+                                controllerCompat.sendCommand(PlaybackService.ACTION_RESET_PLAYER, null, null);
+                        })
+                        .setNegativeButton(R.string.dialog_button_cancel, (dialog, which) -> {})
+                        .show();
+                return true;
             case R.id.action_settings:
                 startActivity(new Intent(this, SettingsActivity.class));
                 return true;
@@ -147,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
                 View view = getLayoutInflater().inflate(R.layout.dialog_add_item, null);
                 TextInputLayout inputLayout = view.findViewById(R.id.text_input_layout);
                 EditText linkEditText = view.findViewById(R.id.edit_text_add_item);
-                AlertDialog addDialog = new AlertDialog.Builder(MainActivity.this)
+                AlertDialog addDialog = new AlertDialog.Builder(this)
                         .setView(view)
                         .setTitle(R.string.dialog_add_item_title)
                         .setNegativeButton(R.string.dialog_button_cancel, (dialog, which) -> {})
@@ -200,6 +215,7 @@ public class MainActivity extends AppCompatActivity {
     void addItemByVideoId(String videoId) {
         Bundle bundle = new Bundle();
         bundle.putString("videoId", videoId);
+        bundle.putString("type", "youtube");
         MediaDescriptionCompat description = new MediaDescriptionCompat.Builder()
                 .setExtras(bundle)
                 .build();
@@ -275,21 +291,35 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    long id = -1;
     void downloadApk(String url) {
+        File update = new File(getExternalFilesDir("update") + "/update.apk");
+        if(update.exists() && !update.delete()) {
+            Log.e("Update", "Failed to delete the existing file.");
+            Toast.makeText(this, "Failed to delete the existing update file.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         DownloadManager manager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-        DownloadManager.Request request =
-                new DownloadManager.Request(Uri.parse(url));
-        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "Pudding.apk");
-        long id = manager.enqueue(request);
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+        request.setDestinationInExternalFilesDir(this, "update", "update.apk");
+        request.setTitle(getString(R.string.app_name));
+        id = manager.enqueue(request);
         ProgressDialog updateDialog = new ProgressDialog(this);
         updateDialog.setTitle(R.string.dialog_title_update);
         updateDialog.setMessage(getString(R.string.dialog_content_wait));
-        updateDialog.setOnCancelListener(dialog -> manager.remove(id));
+        updateDialog.setOnCancelListener(dialog -> cancelUpdate());
         updateDialog.create();
         registerReceiver(new DownloadReceiver(manager, id, updateDialog::dismiss),
                 new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
         updateDialog.show();
-        Toast.makeText(this, R.string.toast_update_start, Toast.LENGTH_LONG).show();
+    }
+
+    void cancelUpdate() {
+        if(id == -1) return;
+        DownloadManager manager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        manager.remove(id);
+        id = -1;
     }
 
     public String getVersionCode(){

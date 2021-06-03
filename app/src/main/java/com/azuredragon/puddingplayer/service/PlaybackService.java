@@ -25,6 +25,7 @@ import androidx.media.MediaBrowserServiceCompat;
 import androidx.preference.PreferenceManager;
 
 import com.azuredragon.puddingplayer.FileLoader;
+import com.azuredragon.puddingplayer.Playlist;
 import com.azuredragon.puddingplayer.R;
 import com.azuredragon.puddingplayer.service.player.MetadataProvider;
 import com.azuredragon.puddingplayer.service.player.URLUpdatingDataSource;
@@ -53,7 +54,8 @@ public class PlaybackService extends MediaBrowserServiceCompat {
     private String TAG = "PlaybackService";
     private SimpleExoPlayer player;
     private SharedPreferences settings;
-    private List<MediaDescriptionCompat> descriptions = new ArrayList<>();
+
+    public static final String ACTION_RESET_PLAYER = "reset_player";
 
     @Nullable
     @Override
@@ -91,13 +93,14 @@ public class PlaybackService extends MediaBrowserServiceCompat {
 
             @Override
             public MediaDescriptionCompat getMediaDescription(Player mPlayer, int windowIndex) {
-                MediaDescriptionCompat des;
-                try {
-                    des = descriptions.get(windowIndex);
-                }
-                catch (IndexOutOfBoundsException e) {
-                    des = null;
-                }
+                MediaItem.PlaybackProperties properties = mPlayer.getMediaItemAt(windowIndex).playbackProperties;
+                if(properties == null) return new MediaDescriptionCompat.Builder().build();
+                Bundle extras = new Bundle();
+                extras.putString("videoId", properties.uri.getQueryParameter("videoId"));
+                extras.putString("type", "youtube");
+                MediaDescriptionCompat des = new MediaDescriptionCompat.Builder()
+                        .setExtras(extras)
+                        .build();
                 return des;
             }
 
@@ -123,14 +126,28 @@ public class PlaybackService extends MediaBrowserServiceCompat {
                     return;
                 }
                 String videoId = description.getExtras().getString("videoId");
-                player.addMediaItem(new MediaItem.Builder()
-                                .setUri(new Uri.Builder().appendQueryParameter("video_id", videoId).build())
+                String type = description.getExtras().getString("type");
+                player.addMediaItem(index, new MediaItem.Builder()
+                                .setUri(new Uri.Builder().appendQueryParameter("videoId", videoId)
+                                        .appendQueryParameter("type", type)
+                                        .build())
                                 .build());
-                descriptions.add(index, description);
             }
 
             @Override
-            public void onRemoveQueueItem(Player mPlayer, MediaDescriptionCompat description) {}
+            public void onRemoveQueueItem(Player mPlayer, MediaDescriptionCompat description) {
+                for(int i = 0; i < player.getMediaItemCount(); i++) {
+                    MediaItem.PlaybackProperties properties = player.getMediaItemAt(i).playbackProperties;
+                    if(properties == null || description.getExtras() == null) break;
+                    String videoId = description.getExtras().getString("videoId");
+                    if(videoId == null) break;
+                    if(videoId.equals(properties.uri.getQueryParameter("videoId"))) {
+                        player.removeMediaItem(i);
+                        connector.invalidateMediaSessionQueue();
+                        break;
+                    }
+                }
+            }
 
             @Override
             public boolean onCommand(Player mPlayer, ControlDispatcher controlDispatcher,
@@ -142,21 +159,27 @@ public class PlaybackService extends MediaBrowserServiceCompat {
                         int from = extras.getInt(TimelineQueueEditor.EXTRA_FROM_INDEX);
                         int to = extras.getInt(TimelineQueueEditor.EXTRA_TO_INDEX);
                         player.moveMediaItem(from, to);
-                        MediaDescriptionCompat des = descriptions.get(to);
-                        descriptions.set(to, descriptions.get(from));
-                        descriptions.set(from, des);
+                        connector.invalidateMediaSessionQueue();
+                        return true;
+                    case ACTION_RESET_PLAYER:
+                        player.stop(true);
                         return true;
                 }
             }
         });
-        new DefaultControlDispatcher() {
+        connector.setControlDispatcher(new DefaultControlDispatcher() {
             @Override
-            public boolean dispatchSetShuffleModeEnabled(Player player, boolean shuffleModeEnabled) {
-                return super.dispatchSetShuffleModeEnabled(player, shuffleModeEnabled);
+            public boolean dispatchStop(Player player, boolean reset) {
+                return super.dispatchStop(player, false);
             }
-        };
+        });
         player = createPlayer();
         connector.setPlayer(player);
+
+        Playlist playlist = new Playlist(this, "previous");
+        for(int i = 0; i < playlist.size(); i++) {
+            player.addMediaItem(MediaItem.fromUri(Uri.parse(playlist.get(i))));
+        }
     }
 
     SharedPreferences.OnSharedPreferenceChangeListener settingsListener = (sharedPreferences, key) -> {
@@ -170,6 +193,14 @@ public class PlaybackService extends MediaBrowserServiceCompat {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Playlist playlist = new Playlist(PlaybackService.this, "previous");
+        playlist.clear();
+        for(int i = 0; i < player.getMediaItemCount(); i++)
+            playlist.add(i, player.getMediaItemAt(i).playbackProperties.uri.toString());
+        String result = playlist.save();
+        if(!result.equals(Playlist.RESULT_SUCCESS))
+            Log.e(TAG, "Unable to save the playlist." + result);
+
         if(notifyManager != null) notifyManager.setPlayer(null);
         if(mSession.getController().getPlaybackState().getState() != PlaybackStateCompat.STATE_NONE)
             mSession.getController().getTransportControls().stop();
@@ -182,10 +213,6 @@ public class PlaybackService extends MediaBrowserServiceCompat {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         return super.onStartCommand(intent, flags, startId);
-    }
-
-    MediaDescriptionCompat getDescriptionByQueueId(long queueId) {
-        return descriptions.get((int) queueId);
     }
 
     SimpleExoPlayer createPlayer() {

@@ -4,7 +4,7 @@
     <string name="notifyDes">這個通知頻道用以顯示播放通知</string>
     <string name="toast_oembed_error">無法取得影片資訊</string>
     <string name="error_http_error">HTTP請求發生錯誤%d</string>
-    <string name="error_no_internet">沒有網路連線</string>
+    <string name="toast_no_internet">沒有網路連線</string>
     <string name="toast_playlist_error">無法取得清單資訊</string>
     <string name="error_http_error_404">連結不存在</string>
     <string name="string_add_item_hint">YouTube連結</string>
@@ -19,7 +19,7 @@
     <string name="dialog_title_update">自動更新</string>
     <string name="dialog_content_update">新版本已推出。(%s)\n\n注意：更新時請勿離開程式</string>
     <string name="dialog_button_update">更新</string>
-    <string name="dialog_button_more_info">更多資訊</string>
+    <string name="dialog_button_more_info">版本資訊</string>
     <string name="edittext_error_required">必填</string>
     <string name="dialog_content_wait">請稍候</string>
     <string name="activity_title_settings">設定</string>
@@ -54,4 +54,15 @@
     <string name="action_reset_player">清空播放清單</string>
     <string name="dialog_title_confirm">確認</string>
     <string name="dialog_clear_playlist">將會刪除清單內的所有項目</string>
+    <string name="metadata_unknown_author">未知的作者</string>
+    <string name="toast_format_not_supported">不支援此音訊格式</string>
+    <string name="toast_decipher_failed">連結解析失敗</string>
+    <string name="dialog_button_open_file">開啟檔案</string>
+    <string name="toast_load_file_failed">無法載入指定的檔案</string>
+    <string name="string_file_unaccessable">無法存取的檔案</string>
+    <string name="toast_permission_denied">存取被拒</string>
+    <string name="string_youtube_LOGIN_REQUIRED">需要登入</string>
+    <string name="string_youtube_UNPLAYABLE">無法播放此影片</string>
+    <string name="preference_shareApplication_title">分享應用程式</string>
+    <string name="preference_shareApplication_summary">喜歡這個App嗎? 跟朋友分享吧!</string>
 </resources>

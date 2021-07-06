@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.azuredragon.puddingplayer.FileLoader;
 import com.azuredragon.puddingplayer.R;
@@ -77,7 +78,7 @@ class PlayerFragment {
             smallPosition.setText(Utils.secondToString(controller.getPlaybackState().getPosition() / 1000));
             if(!isTracking) largePosition.setText(Utils.secondToString(controller.getPlaybackState().getPosition() / 1000));
             if(controller.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING)
-                new Handler(Looper.getMainLooper()).postDelayed(this, 500);
+                new Handler(Looper.getMainLooper()).postDelayed(this, 200);
             else isUpdating = false;
         }
     };
@@ -192,14 +193,17 @@ class PlayerFragment {
         ProgressBar largeProgressBar = largePlayer.findViewById(R.id.player_large_progress);
         ImageView largeArtwork = largePlayer.findViewById(R.id.player_large_artwork);
 
-        largeAuthor.setText(metadata.getText(MediaMetadataCompat.METADATA_KEY_AUTHOR));
+        largeAuthor.setText(metadata.getText(MediaMetadataCompat.METADATA_KEY_ARTIST));
         largeDuration.setText(Utils.secondToString(metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION) / 1000));
         smallTitle.setText(metadata.getText(MediaMetadataCompat.METADATA_KEY_TITLE));
         largeTitle.setText(metadata.getText(MediaMetadataCompat.METADATA_KEY_TITLE));
         smallProgressBar.setMax((int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION));
         largeProgressBar.setMax((int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION));
-        Bitmap bm = BitmapFactory.decodeFile(new FileLoader(mActivity).APPLICATION_DATA_DIR + "thumbnail.jpg");
-        largeArtwork.setImageBitmap(bm);
+        Bitmap bm = metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART);
+
+        if(bm == null) largeArtwork.setImageDrawable(
+                ContextCompat.getDrawable(mActivity, R.drawable.ic_baseline_music_note_24));
+        else largeArtwork.setImageBitmap(bm);
     }
 
 

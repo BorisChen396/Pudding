@@ -10,7 +10,7 @@ android {
         applicationId "com.azuredragon.puddingplayer"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 20210603
+        versionCode 20210706
         versionName "@string/versionName"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -29,7 +29,7 @@ android {
 
 dependencies {
 
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.appcompat:appcompat:1.3.0'
     implementation 'com.google.android.material:material:1.3.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     testImplementation 'junit:junit:4.13.2'
@@ -37,10 +37,9 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
     implementation "androidx.preference:preference:1.1.1"
-    implementation 'androidx.media:media:1.3.0'
-    implementation 'androidx.fragment:fragment:1.3.3'
-    implementation 'com.google.android.exoplayer:exoplayer-core:2.13.3'
-    implementation 'com.google.android.exoplayer:exoplayer-ui:2.13.3'
-    implementation 'com.google.android.exoplayer:extension-mediasession:2.13.3'
-    implementation 'com.eclipsesource.j2v8:j2v8:6.2.0@aar'
+    implementation 'androidx.media:media:1.3.1'
+    implementation 'androidx.fragment:fragment:1.3.5'
+    implementation 'com.google.android.exoplayer:exoplayer-core:2.14.1'
+    implementation 'com.google.android.exoplayer:exoplayer-ui:2.14.1'
+    implementation 'com.google.android.exoplayer:extension-mediasession:2.14.1'
 }

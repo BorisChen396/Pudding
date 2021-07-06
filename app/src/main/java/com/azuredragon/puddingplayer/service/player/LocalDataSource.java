@@ -1,19 +1,17 @@
 package com.azuredragon.puddingplayer.service.player;
 
-
 import android.content.Context;
 import android.net.Uri;
 
 import androidx.annotation.Nullable;
 
-import com.azuredragon.puddingplayer.service.VideoInfo;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSpec;
 import com.google.android.exoplayer2.upstream.TransferListener;
 
 import java.io.IOException;
 
-public final class URLUpdatingDataSource implements DataSource {
+public final class LocalDataSource implements DataSource {
     public static final class Factory implements DataSource.Factory {
         private final DataSource.Factory mFactory;
         private Context mContext;
@@ -25,7 +23,7 @@ public final class URLUpdatingDataSource implements DataSource {
 
         @Override
         public DataSource createDataSource() {
-            return new URLUpdatingDataSource(mFactory.createDataSource(), mContext);
+            return new LocalDataSource(mFactory.createDataSource(), mContext);
         }
     }
 
@@ -33,22 +31,15 @@ public final class URLUpdatingDataSource implements DataSource {
     private DataSpec updatedDataSpec;
     private Context mContext;
 
-    private URLUpdatingDataSource(DataSource dataSource, Context context) {
+    private LocalDataSource(DataSource dataSource, Context context) {
         mDataSource = dataSource;
         mContext = context;
     }
 
     @Override
     public long open(DataSpec dataSpec) throws IOException {
-        VideoInfo info = new VideoInfo(mContext, dataSpec.uri.getQueryParameter("videoId"));
-        updatedDataSpec = dataSpec;
-        try {
-            String url = info.getInfo();
-            if("".equals(url)) throw new IOException("An error has occurred while getting the video url.");
-            updatedDataSpec = updatedDataSpec.buildUpon().setUri(Uri.parse(url)).build();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Uri uri = Uri.parse(dataSpec.uri.getQueryParameter("uri"));
+        updatedDataSpec = dataSpec.buildUpon().setUri(uri).build();
         return mDataSource.open(updatedDataSpec);
     }
 

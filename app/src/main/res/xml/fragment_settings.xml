@@ -35,7 +35,12 @@
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/preference_about">
         <Preference
+            android:key="shareApplication"
+            android:title="@string/preference_shareApplication_title"
+            android:summary="@string/preference_shareApplication_summary" />
+        <Preference
+            android:key="version"
             android:title="@string/preference_versionName_title"
-            android:summary="@string/versionName"/>
+            android:summary="@string/versionName" />
     </PreferenceCategory>
 </PreferenceScreen>

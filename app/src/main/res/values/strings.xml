@@ -2,10 +2,10 @@
     <string name="app_name" translatable="false">Pudding</string>
     <string name="notifiyChannel">Playback</string>
     <string name="notifyDes">This channel is used to show the player notification.</string>
-    <string name="toast_oembed_error">"Unable to get the video info."</string>
+    <string name="toast_oembed_error">Unable to get the video info</string>
     <string name="error_http_error">HTTP request returns error with %d.</string>
-    <string name="error_no_internet">Internet disconnected</string>
-    <string name="toast_playlist_error">"Unable to get the playlist info. "</string>
+    <string name="toast_no_internet">Internet disconnected</string>
+    <string name="toast_playlist_error">Unable to get the playlist info</string>
     <string name="error_http_error_404">The requested URL could not be found</string>
     <string name="string_add_item_hint">YouTube link</string>
     <string name="dialog_add_all_items">There is a list id (%s) in the link.  Would you like to add the whole playlist or just the specific video?</string>
@@ -19,7 +19,7 @@
     <string name="dialog_title_update">Automatic Update</string>
     <string name="dialog_content_update">A newer version is released.  (%s)\n\nWarning: Do not exit the app while updating.</string>
     <string name="dialog_button_update">Update</string>
-    <string name="dialog_button_more_info">More Info</string>
+    <string name="dialog_button_more_info">Version Info</string>
     <string name="edittext_error_required">Required</string>
     <string name="dialog_content_wait">Please wait</string>
     <string name="activity_title_settings">Settings</string>
@@ -45,14 +45,25 @@
         <item>light</item>
         <item>dark</item>
     </string-array>
-    <string name="toast_update_failed">Failed to download the update file.</string>
+    <string name="toast_update_failed">Failed to download the update file</string>
     <string name="toast_save_playlist_failed">Unable to save playlist.\n%s</string>
     <string name="toast_load_playlist_failed">Unable to load playlist.\n%s</string>
     <string name="snackbar_item_removed">Item removed</string>
     <string name="snackbar_action_undo">Undo</string>
-    <string name="versionName" translatable="false">1.0.6</string>
+    <string name="versionName" translatable="false">1.0.7</string>
     <string name="preference_versionName_title">Version</string>
     <string name="action_reset_player">Clear Playlist</string>
     <string name="dialog_title_confirm">Confirm</string>
     <string name="dialog_clear_playlist">This will remove all items in the playlist.</string>
+    <string name="metadata_unknown_author">Unknown</string>
+    <string name="toast_format_not_supported">Unsupported audio format</string>
+    <string name="toast_decipher_failed">Decipher failed</string>
+    <string name="dialog_button_open_file">Open File</string>
+    <string name="toast_load_file_failed">Unable to load the specific file</string>
+    <string name="string_file_unaccessable">UNACCESSABLE FILE</string>
+    <string name="toast_permission_denied">Permission denied</string>
+    <string name="string_youtube_LOGIN_REQUIRED">Login required</string>
+    <string name="string_youtube_UNPLAYABLE">Video unplayable</string>
+    <string name="preference_shareApplication_title">Share this application</string>
+    <string name="preference_shareApplication_summary">Like this app? Share it to your friends!</string>
 </resources>

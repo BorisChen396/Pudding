@@ -2,6 +2,7 @@ package com.azuredragon.puddingplayer;
 
 import android.content.Context;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -56,6 +57,22 @@ public class FileLoader {
         return stringBuilder.toString();
     }
 
+    public byte[] loadFileToByteArray(String path) {
+        File file = new File(path);
+        if(!file.exists() || !file.canRead()) return null;
+
+        byte[] array = new byte[(int) file.length()];
+        BufferedInputStream is;
+        try {
+            is = new BufferedInputStream(new FileInputStream(file));
+            is.read(array, 0, array.length);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return array;
+    }
+
     public void saveFile(String content, String fileName, boolean replaceControl) throws IOException {
         File file = new File(APPLICATION_DATA_DIR + fileName);
         if(replaceControl && file.exists()) {
@@ -87,8 +104,8 @@ public class FileLoader {
         outputStream.close();
     }
 
-    public void deleteFile(String fileName) throws IOException {
-        File file = new File(APPLICATION_DATA_DIR + fileName);
+    public void deleteFile(String path) throws IOException {
+        File file = new File(path);
         if(!file.exists()) throw new IOException("Can't find the specific file.");
         if(!file.canWrite()) throw new IOException("Unable to write the specific file.");
         if(!file.delete()) throw new IOException("Unable to delete the specific file.");

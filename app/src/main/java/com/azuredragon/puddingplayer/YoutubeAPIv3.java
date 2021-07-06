@@ -50,7 +50,7 @@ public class YoutubeAPIv3 {
                 Log.e(TAG, e.getMessage());
                 return new String[0];
             }
-            request.setHttpURLConnection(setupConnection(request.getConnection()));
+            request.setHttpsURLConnection(setupConnection(request.getHttpsURLConnection()));
             Bundle response = request.getResponse();
             if(!response.getBoolean("ok") || response.getString("response") == null) {
                 Log.e(TAG, String.format(mContext.getString(R.string.error_http_error), response.getInt("statusCode")));

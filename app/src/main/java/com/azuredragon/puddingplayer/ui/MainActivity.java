@@ -1,7 +1,12 @@
 package com.azuredragon.puddingplayer.ui;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.FileProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -11,11 +16,13 @@ import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -47,6 +54,8 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     MediaBrowserCompat browser;
@@ -57,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         browser = new MediaBrowserCompat(this,
@@ -69,6 +79,23 @@ public class MainActivity extends AppCompatActivity {
         playlistItemAdapter = new PlaylistItemAdapter(MainActivity.this);
         playlist.setAdapter(playlistItemAdapter);
         playlistItemAdapter.setPlayerView(findViewById(R.id.bottomsheet_player));
+
+        fileChooser = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), fileChooserCallback);
+    }
+
+    void setTheme() {
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        switch(settings.getString("theme", "default")) {
+            case "default":
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                break;
+            case "light":
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                break;
+            case "dark":
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                break;
+        }
     }
 
     @Override
@@ -88,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
+        if(browser.isConnected()) handleSharedContent();
     }
 
     @Override
@@ -115,9 +143,10 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onSlide(@NonNull View bottomSheet, float slideOffset) {}
             });
-            playlistItemAdapter.initializeController();
             refreshPlaylistPadding();
             handleSharedContent();
+            handleFileUri();
+            playlistItemAdapter.initializeController(controllerCompat);
         }
 
         void refreshPlaylistPadding() {
@@ -168,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
                         .setNegativeButton(R.string.dialog_button_cancel, (dialog, which) -> {})
                         .setPositiveButton(R.string.dialog_button_ok, (dialog, which) ->
                                 onSubmitLink(Utils.decodeYTLink(linkEditText.getText().toString())))
+                        .setNeutralButton(R.string.dialog_button_open_file, (dialog, which) -> startFileChooser())
                         .create();
                 addDialog.show();
                 addDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
@@ -206,17 +236,70 @@ public class MainActivity extends AppCompatActivity {
         String action = getIntent().getAction();
         String type = getIntent().getType();
         String data = getIntent().getStringExtra(Intent.EXTRA_TEXT);
+        Uri uri = getIntent().getData();
+        if(action == null) return;
+        if(Intent.ACTION_VIEW.equals(action) && uri != null) {
+            if("content".equals(uri.getScheme()))
+                addItemByLocalUri(uri);
+            if("https".equals(uri.getScheme()) || "http".equals(uri.getScheme()))
+                onSubmitLink(Utils.decodeYTLink(uri.toString()));
+        }
         if(Intent.ACTION_SEND.equals(action) && "text/plain".equals(type)) {
             if(data != null) onSubmitLink(Utils.decodeYTLink(data));
-            setIntent(getIntent().putExtra(Intent.EXTRA_TEXT, ""));
+            setIntent(new Intent(Intent.ACTION_MAIN));
         }
+        setIntent(new Intent(Intent.ACTION_MAIN));
+    }
+
+    ActivityResultLauncher<Intent> fileChooser;
+    void startFileChooser() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.setType("audio/*");
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+        fileChooser.launch(intent);
+    }
+
+    ActivityResultCallback<ActivityResult> fileChooserCallback = result -> fileChooserResult = result;
+
+    ActivityResult fileChooserResult = null;
+    void handleFileUri() {
+        if(fileChooserResult == null) return;
+        List<Uri> uris = new ArrayList<>();
+        Intent intent = fileChooserResult.getData();
+        if(intent == null) return;
+        ClipData clipData = intent.getClipData();
+        if(intent.getData() != null) uris.add(intent.getData());
+        if(clipData != null) {
+            for(int i = 0; i < clipData.getItemCount(); i++) {
+                uris.add(clipData.getItemAt(i).getUri());
+            }
+        }
+        for(int i = 0; i < uris.size(); i++) {
+            int flags = intent.getFlags() & (
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION |
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            getContentResolver().takePersistableUriPermission(uris.get(i), flags);
+            addItemByLocalUri(uris.get(i));
+        }
+        fileChooserResult = null;
+    }
+
+    void addItemByLocalUri(Uri uri) {
+        Bundle bundle = new Bundle();
+        bundle.putString("type", PlaybackService.TYPE_LOCAL);
+        MediaDescriptionCompat description = new MediaDescriptionCompat.Builder()
+                .setMediaUri(uri)
+                .setExtras(bundle)
+                .build();
+        controllerCompat.addQueueItem(description);
     }
 
     void addItemByVideoId(String videoId) {
         Bundle bundle = new Bundle();
-        bundle.putString("videoId", videoId);
-        bundle.putString("type", "youtube");
+        bundle.putString("type", PlaybackService.TYPE_YOUTUBE);
         MediaDescriptionCompat description = new MediaDescriptionCompat.Builder()
+                .setMediaUri(new Uri.Builder().appendQueryParameter("videoId", videoId).build())
                 .setExtras(bundle)
                 .build();
         controllerCompat.addQueueItem(description);
@@ -296,7 +379,7 @@ public class MainActivity extends AppCompatActivity {
         File update = new File(getExternalFilesDir("update") + "/update.apk");
         if(update.exists() && !update.delete()) {
             Log.e("Update", "Failed to delete the existing file.");
-            Toast.makeText(this, "Failed to delete the existing update file.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.toast_update_failed, Toast.LENGTH_LONG).show();
             return;
         }
 

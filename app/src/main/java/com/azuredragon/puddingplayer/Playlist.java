@@ -2,16 +2,13 @@ package com.azuredragon.puddingplayer;
 
 import android.content.Context;
 import android.net.Uri;
-import android.util.Log;
-
-import androidx.annotation.NonNull;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,84 +17,69 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-public class Playlist extends ArrayList<String> {
-    private String playlistTitle = "";
+public class Playlist extends ArrayList<Uri> {
     private Context mContext;
-    private String TAG = "Playlist";
+    private long requestId;
+    private String listTitle = "";
 
-    public static String RESULT_INVALID_TITLE = "invalid_title";
-    public static String RESULT_XML_EXCEPTION = "xml_exception";
-    public static String RESULT_IO_EXCEPTION = "io_exception";
-    public static String RESULT_SUCCESS = "success";
+    public static long PREVIOUS_PLAYLIST_ID = 0;
 
-    public Playlist(@NonNull Context context, @NonNull String title) {
+    public Playlist(Context context, long listId) {
         mContext = context;
-        playlistTitle = title;
-        Document document;
-        String path = new FileLoader(mContext).APPLICATION_DATA_DIR + "playlist_" + playlistTitle;
-        try {
-            DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            document = builder.parse(new FileInputStream(path));
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            Log.e(TAG, "Load error: " + e.getMessage());
-            return;
-        }
+        requestId = listId;
+        try {load();}
+        catch (ParserConfigurationException | IOException | SAXException ignored) {}
+    }
+
+    public Playlist(Context context, long listId, String title) {
+        mContext = context;
+        requestId = listId;
+        listTitle = title;
+        try {load();}
+        catch (ParserConfigurationException | IOException | SAXException ignored) {}
+    }
+
+    private void load() throws ParserConfigurationException, IOException, SAXException {
+        FileLoader loader = new FileLoader(mContext);
+        String path = loader.APPLICATION_DATA_DIR + "playlist_" + requestId;
+        if(!loader.checkFileExistance(path)) return;
+        DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document document = builder.parse(new File(path));
         Element playlist = document.getDocumentElement();
         NodeList items = playlist.getElementsByTagName("item");
         for(int i = 0; i < items.getLength(); i++) {
             Element item = (Element) items.item(i);
-            String type = item.getAttribute("type");
-            String videoId = item.getAttribute("videoId");
-            add(i, new Uri.Builder().appendQueryParameter("videoId", videoId)
-                    .appendQueryParameter("type", type)
-                    .build().toString());
+            String uri = item.getAttribute("uri");
+            if(uri == null) continue;
+            add(Uri.parse(uri));
         }
     }
 
-    public String save() {
-        if(playlistTitle.equals("")) {
-            Log.e(TAG, "Title is not set.");
-            return RESULT_INVALID_TITLE;
-        }
-        FileLoader loader = new FileLoader(mContext);
-        String path = loader.APPLICATION_DATA_DIR + "playlist_" + playlistTitle;
-        DocumentBuilder builder;
-        try {
-            builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            Log.e(TAG, e.getMessage());
-            return RESULT_XML_EXCEPTION;
-        }
+    public void save() throws ParserConfigurationException, IOException, TransformerException {
+        DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document document = builder.newDocument();
         Element playlist = document.createElement("playlist");
-        playlist.setAttribute("title", playlistTitle);
+        playlist.setAttribute("id", String.valueOf(requestId));
+        playlist.setAttribute("title", listTitle);
         for(int i = 0; i < size(); i++) {
-            Uri uri = Uri.parse(get(i));
+            Uri uri = get(i);
             Element item = document.createElement("item");
-            item.setAttribute("type", uri.getQueryParameter("type"));
-            item.setAttribute("videoId", uri.getQueryParameter("videoId"));
+            item.setAttribute("uri", uri.toString());
             playlist.appendChild(item);
         }
         document.appendChild(playlist);
-        FileOutputStream os;
-        try {
-            os = new FileOutputStream(path);
-        } catch (IOException e) {
-            Log.e(TAG, e.getMessage());
-            return RESULT_IO_EXCEPTION;
-        }
-        try {
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            transformer.transform(new DOMSource(document), new StreamResult(os));
-        } catch (TransformerException e) {
-            Log.e(TAG, e.getMessage());
-            return RESULT_XML_EXCEPTION;
-        }
-        return RESULT_SUCCESS;
+        FileLoader loader = new FileLoader(mContext);
+        String path = loader.APPLICATION_DATA_DIR + "playlist_" + requestId;
+        if(loader.checkFileExistance(path))
+            loader.deleteFile(path);
+        FileOutputStream os = new FileOutputStream(path);
+        Transformer transformer = TransformerFactory.newInstance().newTransformer();
+        transformer.transform(new DOMSource(document), new StreamResult(os));
     }
 }

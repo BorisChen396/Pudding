@@ -1,15 +1,26 @@
 package com.azuredragon.puddingplayer;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+
+import com.azuredragon.puddingplayer.service.PlaybackService;
+
 import java.util.Locale;
 
 public class Utils {
     static public Bundle decodeYTLink(String link) {
+        if(link.equals("Pudding is delicious <3"))
+            link = "https://youtu.be/dQw4w9WgXcQ";
+
         Bundle obj = new Bundle();
         if(link.contains("youtu.be"))
             link = link.replace("youtu.be/", "www.youtube.com/watch?v=");
@@ -47,8 +58,25 @@ public class Utils {
                 dpVal, context.getResources().getDisplayMetrics());
     }
 
-    static public int getHeightPxWithContext(Context context) {
+    public static int getHeightPxWithContext(Context context) {
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         return displayMetrics.heightPixels;
+    }
+
+    @NonNull public static String getFilenameWithoutExtension(String filename, Context context) {
+        if(filename == null) return context.getString(R.string.string_file_unaccessable);
+        int index = filename.lastIndexOf(".");
+        if(index < 0) return filename;
+        return filename.substring(0, index);
+    }
+
+    public static Bitmap createDefaultLargeIcon(Context context) {
+        Drawable dfIcon = ContextCompat.getDrawable(context, R.drawable.ic_baseline_music_note_24);
+        if(dfIcon == null) return null;
+        Bitmap bm = Bitmap.createBitmap(dfIcon.getIntrinsicWidth(), dfIcon.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bm);
+        dfIcon.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        dfIcon.draw(canvas);
+        return bm;
     }
 }

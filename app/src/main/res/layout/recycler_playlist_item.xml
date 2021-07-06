@@ -5,42 +5,60 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
-    android:padding="?dialogPreferredPadding"
-    android:focusable="true"
-    android:clickable="true"
     android:background="?android:attr/selectableItemBackground">
 
-    <ImageView
-        android:id="@+id/imageView3"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
-        android:background="@color/black"
+    <View
+        android:id="@+id/current_item_mask"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:srcCompat="@tools:sample/avatars" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:background="@color/purple_200"
+        android:alpha="0.25"
+        android:visibility="gone"/>
 
-    <TextView
-        android:id="@+id/playlist_item_title"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toEndOf="@id/imageView3"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginLeft="20dp"
-        android:paddingBottom="5dp"
-        android:textAppearance="?textAppearanceListItem"
-        android:maxLines="1"
-        android:ellipsize="end"/>
+        android:padding="?dialogPreferredPadding">
 
-    <TextView
-        android:id="@+id/playlist_item_author"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="@id/playlist_item_title"
-        app:layout_constraintTop_toBottomOf="@id/playlist_item_title"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:maxLines="1"
-        android:ellipsize="end"
-        android:textAppearance="?textAppearanceListItemSecondary" />
+        <ImageView
+            android:id="@+id/imageView3"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:src="@drawable/ic_baseline_music_note_24"/>
+
+        <TextView
+            android:id="@+id/playlist_item_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@id/imageView3"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginLeft="20dp"
+            android:paddingBottom="5dp"
+            android:textAppearance="?textAppearanceListItem"
+            android:maxLines="1"
+            android:ellipsize="end"/>
+
+        <TextView
+            android:id="@+id/playlist_item_author"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/playlist_item_title"
+            app:layout_constraintTop_toBottomOf="@id/playlist_item_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textAppearance="?textAppearanceListItemSecondary" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

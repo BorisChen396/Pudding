@@ -2,11 +2,18 @@ package com.azuredragon.puddingplayer.ui;
 
 import android.app.Activity;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.ResultReceiver;
 import android.support.v4.media.MediaDescriptionCompat;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,11 +23,15 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.azuredragon.puddingplayer.FileLoader;
 import com.azuredragon.puddingplayer.R;
+import com.azuredragon.puddingplayer.Utils;
+import com.azuredragon.puddingplayer.service.PlaybackService;
 import com.google.android.exoplayer2.ext.mediasession.TimelineQueueEditor;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -40,16 +51,12 @@ class PlaylistItemAdapter extends RecyclerView.Adapter<PlaylistItemAdapter.ViewH
     private final ExecutorService executorService;
     private final String TAG = "PlaylistItemAdapter";
     private final List<String> downloadList = new ArrayList<>();
-    private RecyclerView mRecyclerView;
+    private int currentIndex = -1;
     ItemTouchHelper touchHelper;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public ViewHolder(@NonNull View itemView, MediaControllerCompat controller) {
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            itemView.setOnClickListener(v -> {
-                long id = controller.getQueue().get(getAdapterPosition()).getQueueId();
-                controller.getTransportControls().skipToQueueItem(id);
-            });
         }
 
         TextView getTitle() {
@@ -63,6 +70,11 @@ class PlaylistItemAdapter extends RecyclerView.Adapter<PlaylistItemAdapter.ViewH
         ImageView getArtwork() {
             return itemView.findViewById(R.id.imageView3);
         }
+
+        void setIsCurrent(boolean isCurrent) {
+            View playingMask = itemView.findViewById(R.id.current_item_mask);
+            playingMask.setVisibility(isCurrent ? View.VISIBLE : View.GONE);
+        }
     }
 
     public PlaylistItemAdapter(Activity activity) {
@@ -71,19 +83,37 @@ class PlaylistItemAdapter extends RecyclerView.Adapter<PlaylistItemAdapter.ViewH
         touchHelper = new ItemTouchHelper(touchCallback);
     }
 
-    void initializeController() {
-        MediaControllerCompat controller = MediaControllerCompat.getMediaController(mActivity);
+    void initializeController(MediaControllerCompat controller) {
         mQueue = controller.getQueue();
         mController = controller;
-        controller.registerCallback(new MediaControllerCompat.Callback() {
-            @Override
-            public void onQueueChanged(List<MediaSessionCompat.QueueItem> queue) {
-                super.onQueueChanged(queue);
-                mQueue = queue;
-                notifyDataSetChanged();
-            }
-        });
+        controller.registerCallback(controllerCallback);
+        mController.sendCommand(PlaybackService.ACTION_GET_CURRENT_INDEX, null, resultReceiver);
+        notifyDataSetChanged();
     }
+
+    MediaControllerCompat.Callback controllerCallback = new MediaControllerCompat.Callback() {
+        @Override
+        public void onQueueChanged(List<MediaSessionCompat.QueueItem> queue) {
+            super.onQueueChanged(queue);
+            mQueue = queue;
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public void onPlaybackStateChanged(PlaybackStateCompat state) {
+            super.onPlaybackStateChanged(state);
+            mController.sendCommand(PlaybackService.ACTION_GET_CURRENT_INDEX, null, resultReceiver);
+        }
+    };
+
+    ResultReceiver resultReceiver = new ResultReceiver(new Handler(Looper.getMainLooper())) {
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+            super.onReceiveResult(resultCode, resultData);
+            currentIndex = resultCode;
+            notifyDataSetChanged();
+        }
+    };
 
     ItemTouchHelper.Callback touchCallback = new ItemTouchHelper.SimpleCallback(
             ItemTouchHelper.UP|ItemTouchHelper.DOWN,
@@ -146,7 +176,6 @@ class PlaylistItemAdapter extends RecyclerView.Adapter<PlaylistItemAdapter.ViewH
     @Override
     public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
-        mRecyclerView = recyclerView;
         touchHelper.attachToRecyclerView(recyclerView);
     }
 
@@ -155,13 +184,60 @@ class PlaylistItemAdapter extends RecyclerView.Adapter<PlaylistItemAdapter.ViewH
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.recycler_playlist_item, parent, false);
-        return new ViewHolder(view, mController);
+        return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        if(mQueue.get(position).getDescription().getExtras() == null) return;
-        String videoId = mQueue.get(position).getDescription().getExtras().getString("videoId");
+        if (mQueue.get(position).getDescription().getExtras() == null) return;
+        String type = mQueue.get(position).getDescription().getExtras().getString("type");
+        switch (type) {
+            case PlaybackService.TYPE_LOCAL:
+                bindViewHolderByLocalFile(holder, position);
+                break;
+            case PlaybackService.TYPE_YOUTUBE:
+                bindViewHolderByVideoId(holder, position);
+                break;
+        }
+        holder.itemView.setOnClickListener(v -> {
+            long id = mController.getQueue().get(holder.getAdapterPosition()).getQueueId();
+            mController.getTransportControls().skipToQueueItem(id);
+        });
+        holder.setIsCurrent(mQueue.get(position).getQueueId() == currentIndex);
+    }
+
+    void bindViewHolderByLocalFile(@NonNull ViewHolder holder, int position) {
+        Uri uri = mQueue.get(position).getDescription().getMediaUri();
+        if(uri == null) return;
+        String filename = DocumentFile.fromSingleUri(mActivity, uri).getName();
+        filename = Utils.getFilenameWithoutExtension(filename, mActivity);
+        boolean isRetrieverSupported = true;
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        try {
+            retriever.setDataSource(mActivity, uri);
+        } catch (Exception e) {
+            Log.e("MetadataProvider", "File not supported by retriever.");
+            isRetrieverSupported = false;
+        }
+        String title = isRetrieverSupported ? retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE) : null;
+        String artist = isRetrieverSupported ? retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST) : null;
+        String author = isRetrieverSupported ? retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_AUTHOR) : null;
+        byte[] artwork = isRetrieverSupported ? retriever.getEmbeddedPicture() : null;
+        holder.getTitle().setText(title == null ? filename : title);
+        holder.getAuthor().setText(artist == null ?
+                (author == null ? mActivity.getString(R.string.metadata_unknown_author) : author) : artist);
+
+        if(artwork == null) {
+            holder.getArtwork().setImageDrawable(
+                    ContextCompat.getDrawable(mActivity, R.drawable.ic_baseline_music_note_24));
+        }
+        else {
+            holder.getArtwork().setImageBitmap(BitmapFactory.decodeByteArray(artwork, 0, artwork.length));
+        }
+    }
+
+    void bindViewHolderByVideoId(@NonNull ViewHolder holder, int position) {
+        String videoId = mQueue.get(position).getDescription().getMediaUri().getQueryParameter("videoId");
         FileLoader loader = new FileLoader(mActivity);
         String metadataPath = loader.APPLICATION_CACHE_DIR + videoId;
         String thumbnailPath = loader.APPLICATION_CACHE_DIR + videoId + ".jpg";
@@ -195,11 +271,11 @@ class PlaylistItemAdapter extends RecyclerView.Adapter<PlaylistItemAdapter.ViewH
         else {
             //從暫存區取得影片資訊
             if(loader.getFileSize(metadataPath) == 0 || loader.getFileSize(thumbnailPath) == 0) return;
-            setViewContent(loader.loadFile(metadataPath), holder, thumbnailPath);
+            setYtViewContent(loader.loadFile(metadataPath), holder, thumbnailPath);
         }
     }
 
-    void setViewContent(String content, ViewHolder holder, String thumbnailPath) {
+    void setYtViewContent(String content, ViewHolder holder, String thumbnailPath) {
         JSONObject metadata;
         try {
             metadata = new JSONObject(content);

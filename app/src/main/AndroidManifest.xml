@@ -41,15 +41,44 @@
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
-
                 <category android:name="android.intent.category.DEFAULT" />
-
                 <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="content"
+                    android:mimeType="audio/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https"
+                    android:host="*youtube.com"
+                    android:path="/watch" />
+                <data android:scheme="http"
+                    android:host="*youtube.com"
+                    android:path="/watch" />
+                <data android:scheme="https"
+                    android:host="*youtube.com"
+                    android:path="/playlist" />
+                <data android:scheme="http"
+                    android:host="*youtube.com"
+                    android:path="/playlist" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https"
+                    android:host="youtu.be" />
+                <data android:scheme="http"
+                    android:host="youtu.be" />
             </intent-filter>
         </activity>
 

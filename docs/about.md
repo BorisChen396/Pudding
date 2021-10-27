@@ -1,7 +1,7 @@
 ---
+layout: default
 title: About
-has-children: false
-nav-order: 2
+nav_order: 2
 ---
 
 # About

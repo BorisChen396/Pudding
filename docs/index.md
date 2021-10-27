@@ -20,7 +20,6 @@ Pudding is currently only available on Android.  You can download the latest APK
 
  + Local
  + YouTube
-...and more in the future!
 
 [get-latest-apk]: javascript:getLatestApk();
 

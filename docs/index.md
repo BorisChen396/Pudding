@@ -18,12 +18,10 @@ Pudding is currently only available on Android.  You can download the latest APK
 
 ## Supported platforms
 
----
-Local: [x]
-YouTube: [x]
-SoundCloud: [ ]
-StreetVoice: [ ]
----
+ + Local
+ + YouTube
+
+...and more in the future!
 
 [get-latest-apk]: javascript:getLatestApk();
 

@@ -1,10 +1,8 @@
-# Pudding Player
-
-[Download latest APK][get-latest-apk]{: .btn }
-
-## What is Pudding Player
+# Pudding
 
 Pudding is a music player that let you enjoy music on your device, YouTube, and more in the future!
+
+[Download latest APK][get-latest-apk]{: .btn }
 
 ## How to install Pudding
 

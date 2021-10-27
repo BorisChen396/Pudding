@@ -8,10 +8,7 @@ nav_order: 1
 
 Pudding is a music player that let you enjoy music from various sources!
 
-<div style="vertical-align: middle">
- [Download latest][get-latest-apk]{: .btn .btn-primary }
- or [download other version][get-old-apk].
-</div>
+[[Download latest][get-latest-apk]{: .btn .btn-primary } or [download other version][get-old-apk]]{vertical-align: middle}.
 
 ## How to install Pudding
 

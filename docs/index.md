@@ -1,8 +1,6 @@
 # Pudding Player
 
-[Link button](http://example.com/){: .btn }
-
-<button type="button" name="button" class="btn">Download latest APK</button>
+<button type="button" name="button" class="btn" id="btn_latest_apk">Download latest APK</button>
 
 ## What is Pudding Player
 

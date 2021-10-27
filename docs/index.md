@@ -8,11 +8,11 @@ nav_order: 1
 
 Pudding is a music player that let you enjoy music from various sources!
 
-[Download latest][get-latest-apk]{: .btn .btn-primary } [Download other version][get-old-apk]{: .btn }
+[Download latest][get-latest-apk]{: .btn .btn-primary } or [Download other version][get-old-apk]{: .btn }
 
-## How to install Pudding
+## Installation
 
-Pudding is currently only available on Android.  You can download the latest APK file at [here][get-latest-apk], or find other versions at [here][get-old-apk].
+Pudding currently only works on Android Lollipop or above.  You can download the latest APK file [here][get-latest-apk], or find other versions [here][get-old-apk].
 
 ## Supported sources
 

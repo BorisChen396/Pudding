@@ -1,1 +1,11 @@
 remote_theme: pmarsceill/just-the-docs
+
+collections:
+  about:
+    permalink: "/:collection/:path/"
+    output: true
+
+just_the_docs:
+  collections:
+    about:
+      name: About

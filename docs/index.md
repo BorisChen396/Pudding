@@ -1,4 +1,8 @@
-# Pudding
+---
+title: Home
+has-children: false
+nav-order: 1
+---
 
 Pudding is a music player that let you enjoy music on your device and YouTube!
 

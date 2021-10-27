@@ -1,6 +1,6 @@
 ---
+layout: default
 title: Home
-has-children: false
 nav-order: 1
 ---
 

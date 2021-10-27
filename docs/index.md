@@ -18,6 +18,7 @@ Pudding currently only works on Android Lollipop or above.  You can download the
 
  + Local
  + YouTube
+
 More sources will be supported in the future!
 
 [get-latest-apk]: javascript:getLatestApk();

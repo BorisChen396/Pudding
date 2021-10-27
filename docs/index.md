@@ -6,7 +6,7 @@ nav_order: 1
 
 # Pudding
 
-Pudding is a music player that let you enjoy music on your device and YouTube!
+Pudding is a music player that let you enjoy music from various platforms!
 
 [Download latest APK][get-latest-apk]{: .btn .btn-primary }
 
@@ -15,6 +15,15 @@ Pudding is a music player that let you enjoy music on your device and YouTube!
 ## How to install Pudding
 
 Pudding is currently only available on Android.  You can download the latest APK file at [here][get-latest-apk], or find other versions at [here][get-old-apk].
+
+## Supported platforms
+
+---
+Local: [x]
+YouTube: [x]
+SoundCloud: [ ]
+StreetVoice: [ ]
+---
 
 [get-latest-apk]: javascript:getLatestApk();
 

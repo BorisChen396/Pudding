@@ -1,6 +1,6 @@
 # Pudding Player
 
-<button height="50px" width="150px">Download latest APK</button>
+<a id="url_title_latest_apk" class="btn">Download latest APK</a>
 
 ## What is Pudding Player
 

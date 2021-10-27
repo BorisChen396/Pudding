@@ -15,6 +15,6 @@ Pudding is currently only available on Android.  You can download the latest APK
 [get-old-apk]: javascript:getOldApk();
 
 <script>
-    function getLatestApk(){fetch("https://api.github.com/repos/BorisChen396/PuddingPlayer/releases").then(res=>{if(res.ok)res.json().then(json=>{alert(JSON.stringify(json))})})};
+    function getLatestApk(){fetch("https://api.github.com/repos/BorisChen396/PuddingPlayer/releases/latest").then(res=>{if(res.ok)res.json().then(json=>{window.open(json.assets[json.assets.length-1].browser_download_url)})})};
     function getOldApk(){if(confirm("Old versions may be unusable because of bugs or other problems.\nContinue?"))window.location.href="https://github.com/BorisChen396/PuddingPlayer/releases"};
 </script>

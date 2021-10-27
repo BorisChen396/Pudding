@@ -1,6 +1,6 @@
 # Pudding
 
-Pudding is a music player that let you enjoy music on your device, YouTube, and more in the future!
+Pudding is a music player that let you enjoy music on your device, YouTube, and more other platforms in the future!
 
 [Download latest APK][get-latest-apk]{: .btn }
 
